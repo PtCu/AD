@@ -1,4 +1,4 @@
-from chimera.algorithm import clustering_main
+from algorithm import clustering_main
 
 __author__ = "Junhao Wen"
 __copyright__ = "Copyright 2019-2020 The CBICA & SBIA Lab"

@@ -119,17 +119,16 @@ def Mstep(y,yd,ys,x,tx,xd,xs,P,params,config):
     """Mstep optimization, for different transformation import different modules
     """
     if config['transform'] == 'affine':
-        from .Mstep_affine import solve_sigsq,solve_delta,solve_T,solve_t
+        from Mstep_affine import solve_sigsq,solve_delta,solve_T,solve_t
     elif config['transform'] == 'duo':
-        from .Mstep_duo import solve_sigsq,solve_delta,solve_T,solve_t
+        from Mstep_duo import solve_sigsq,solve_delta,solve_T,solve_t
     else:
-        from .Mstep_trans import solve_sigsq,solve_delta,solve_T,solve_t
+        from Mstep_trans import solve_sigsq,solve_delta,solve_T,solve_t
     
     params['sigsq'] = solve_sigsq(y,yd,ys,tx,xd,xs,P,params,config)
     params['delta'] = solve_delta(y,x,P,params)
     params['T'] = solve_T(y,x,P,params,config)
     params['t'] = solve_t(y,x,P,params,config)
-    
     return params
     
 def calc_obj(x,y,xd,yd,xs,ys,P,params,config):

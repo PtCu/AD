@@ -2,7 +2,7 @@ from .algorithm import *
 
 ##NOTE: this script has not been adapted! Don't use it directly!
 
-def train(dataFile, outFile, numClusters, lambda1=10.0, lambda2=100.0, r=-1.0, rs=10, eps=0.001, max_iter=100,\
+def train(featureFile,covFile, outFile, numClusters, lambda1=10.0, lambda2=100.0, r=-1.0, rs=10, eps=0.001, max_iter=100,\
         numRun=50, modelFile="", transform="affine", norm=1, mode=2, verbose=False, quiet=True):
     """
     CHIMERA--
@@ -75,10 +75,10 @@ def train(dataFile, outFile, numClusters, lambda1=10.0, lambda2=100.0, r=-1.0, r
     sys.stdout.write("Parsing arguments...\n")
      
     # check input
-    if not os.path.exists(dataFile):
-        sys.stdout.write("File " + dataFile + " not found\n")
+    if not os.path.exists(featureFile):
+        sys.stdout.write("File " + featureFile + " not found\n")
         sys.exit(1)
-    if dataFile == outFile:
+    if featureFile == outFile:
         sys.stdout.write("Input file and output file name should not be the same.\n")
         sys.exit(1)
     if numClusters <= 1:
@@ -106,7 +106,7 @@ def train(dataFile, outFile, numClusters, lambda1=10.0, lambda2=100.0, r=-1.0, r
     # run optimzation
     sys.stdout.write("Starting CHIMERA clustering...\n")
     config.update({'K':numClusters})
-    clustering_main(dataFile,outFile,config)
+    clustering_main(featureFile,covFile,outFile,config)
     
     # check output
     if not os.path.exists(outFile):
@@ -116,7 +116,7 @@ def train(dataFile, outFile, numClusters, lambda1=10.0, lambda2=100.0, r=-1.0, r
     sys.stdout.write("Finished.\n")
 
 
-def test(dataFile, outFile, modelFile):
+def test(featureFile,covFile, outFile, modelFile):
     """
     CHIMERA--
     Clustering heterogenous disease effects via distribution matching of imaging patterns.
@@ -154,19 +154,19 @@ def test(dataFile, outFile, modelFile):
     """
 
     # check input
-    if not os.path.exists(dataFile):
-        sys.stdout.write("File " + dataFile + " not found\n")
+    if not os.path.exists(featureFile):
+        sys.stdout.write("File " + featureFile + " not found\n")
         sys.exit(1)
     if not os.path.exists(modelFile):
         sys.stdout.write("Model " + modelFile + " not found\n")
         sys.exit(1)
-    if dataFile == outFile:
+    if featureFile == outFile:
         sys.stdout.write("Input file and output file name should not be the same.\n")
         sys.exit(1)
 
     # run optimzation
     sys.stdout.write("Starting CHIMERA clustering...\n")
-    clustering_test(dataFile,outFile,modelFile)
+    clustering_test(featureFile,covFile,outFile,modelFile)
     
     # check output
     if not os.path.exists(outFile):

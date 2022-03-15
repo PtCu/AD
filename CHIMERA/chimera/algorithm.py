@@ -1,6 +1,6 @@
 import sys, csv, os
 import pickle
-from .optimization_utils import *
+from optimization_utils import *
 from sklearn.metrics import adjusted_rand_score as ARI
 import pandas as pd
 
@@ -291,6 +291,9 @@ def clustering_test(dataFile,outFile,modelFile):
 #==============================================================================================
 # Normalization code
 #==============================================================================================  
+# https://blog.csdn.net/lyhope9/article/details/82778459
+# 对每一个样本的所有ROI独立地进行归一化
+# x.max(axis=0) 在第0维上取最大值（即每行），返回一个行向量（ncols,），包含每列的最大值，然后可以用x来除以这个向量，这样每一列的最大值就会被缩放到1。
 def data_normalization(feat_img, feat_cov, config):
     if config['norm'] == 'minmax':
         model = {'img_min': 0, 'img_range': 0, 'cov_min': 0, 'cov_range': 0}

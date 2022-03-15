@@ -6,6 +6,11 @@ from pip import main
 
 TOTAL_NUM=500
 
+#正常人标签
+NC_TYPE=-1
+#病号标签
+PT_TYPE=1
+
 sample_id=int(0)
 
 def normalization(data):
@@ -25,11 +30,11 @@ def gen_a_nc_sample():
     volume_size=normalization(volume_size)
     with open('covariate.tsv', 'a') as f:
         tsv_w = csv.writer(f, delimiter='\t')
-        tsv_w.writerow([int(sample_id), age, sex,1])  
+        tsv_w.writerow([int(sample_id), age, sex,NC_TYPE])  
     
     with open('features.tsv','a') as f:
         tsv_w = csv.writer(f, delimiter='\t')
-        l=np.array([int(sample_id),1]) 
+        l=np.array([int(sample_id),NC_TYPE]) 
         a_row=np.append(l,volume_size)
         tsv_w.writerow(a_row)  
         
@@ -59,11 +64,11 @@ def gen_a_pc_sample(type):
 
     with open('covariate.tsv', 'a') as f:
             tsv_w = csv.writer(f, delimiter='\t')
-            tsv_w.writerow([int(sample_id), age, sex,-1])  
+            tsv_w.writerow([int(sample_id), age, sex,PT_TYPE])  
     
     with open('features.tsv','a') as f:
         tsv_w = csv.writer(f, delimiter='\t')
-        l=np.array([int(sample_id),-1]) 
+        l=np.array([int(sample_id),PT_TYPE]) 
         a_row=np.append(l,volume_size)
         tsv_w.writerow(a_row)  
 
