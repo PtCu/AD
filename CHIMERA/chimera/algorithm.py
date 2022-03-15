@@ -59,6 +59,7 @@ def clustering_main(dataFile, covariate_tsv, output_dir, config):
     else:
         feat_set = df_covariate['site'].to_numpy()
     del df_covariate['site']
+    #covariate只包含sex和age
     feat_cov = df_covariate.iloc[:, 3:].to_numpy()
 
     #================================= Normalizing Data ======================================================
