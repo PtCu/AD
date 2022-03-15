@@ -17,7 +17,7 @@ def normalization(data):
     _range = np.max(data) - np.min(data)
     return (data - np.min(data)) / _range
     
-def gen_a_nc_sample():
+def gen_a_nc_sample(save_type):
     global sample_id
     sample_id+=1
     volume_size=np.random.normal(1, 0.1,20)
@@ -28,19 +28,27 @@ def gen_a_nc_sample():
     volume_size-=atrophy
     #归一化
     volume_size=normalization(volume_size)
-    with open('covariate.tsv', 'a') as f:
-        tsv_w = csv.writer(f, delimiter='\t')
-        tsv_w.writerow([int(sample_id), age, sex,NC_TYPE])  
-    
-    with open('features.tsv','a') as f:
-        tsv_w = csv.writer(f, delimiter='\t')
-        l=np.array([int(sample_id),NC_TYPE]) 
-        a_row=np.append(l,volume_size)
-        tsv_w.writerow(a_row)  
+    #type为0时分开保存feature和covariate
+    if(save_type==0):
+        with open('covariate.tsv', 'a') as f:
+            tsv_w = csv.writer(f, delimiter='\t')
+            tsv_w.writerow([int(sample_id), age, sex,NC_TYPE])  
+        
+        with open('features.tsv','a') as f:
+            tsv_w = csv.writer(f, delimiter='\t')
+            l=np.array([int(sample_id),NC_TYPE]) 
+            a_row=np.append(l,volume_size)
+            tsv_w.writerow(a_row)  
+    else:
+         with open('covariate_feature.tsv', 'a') as f:
+            tsv_w = csv.writer(f, delimiter='\t')
+            l=np.array([int(sample_id), age, sex,NC_TYPE])  
+            a_row=np.append(l,volume_size)
+            tsv_w.writerow(a_row) 
         
     
 
-def gen_a_pc_sample(type):
+def gen_a_pc_sample(type,save_type):
     global sample_id
     sample_id+=1
     volume_size=np.random.normal(1, 0.1,20)
@@ -62,24 +70,35 @@ def gen_a_pc_sample(type):
             volume_size[i*5]*=0.85
             volume_size[i*5+1]*=0.85
 
-    with open('covariate.tsv', 'a') as f:
+    if(save_type==0):
+        with open('covariate.tsv', 'a') as f:
             tsv_w = csv.writer(f, delimiter='\t')
             tsv_w.writerow([int(sample_id), age, sex,PT_TYPE])  
-    
-    with open('features.tsv','a') as f:
-        tsv_w = csv.writer(f, delimiter='\t')
-        l=np.array([int(sample_id),PT_TYPE]) 
-        a_row=np.append(l,volume_size)
-        tsv_w.writerow(a_row)  
+        
+        with open('features.tsv','a') as f:
+            tsv_w = csv.writer(f, delimiter='\t')
+            l=np.array([int(sample_id),PT_TYPE]) 
+            a_row=np.append(l,volume_size)
+            tsv_w.writerow(a_row)  
+    else:
+         with open('covariate_feature.tsv', 'a') as f:
+            tsv_w = csv.writer(f, delimiter='\t')
+            l=np.array([int(sample_id), age, sex,PT_TYPE])  
+            a_row=np.append(l,volume_size)
+            tsv_w.writerow(a_row) 
+   
 
 
-def gen_samples():
+def gen_samples(save_type):
     for i in range(0,TOTAL_NUM):
-        gen_a_nc_sample()
+        gen_a_nc_sample(save_type)
 
     for i in range(0,TOTAL_NUM//2):
-        gen_a_pc_sample(0)
-        gen_a_pc_sample(1)
+        gen_a_pc_sample(0,save_type)
+        gen_a_pc_sample(1,save_type)
+
+TRAIN=0
+TEST=1
 
 if __name__=="__main__":
     with open('covariate.tsv', 'w') as f:
@@ -91,5 +110,16 @@ if __name__=="__main__":
         title=["ID","diagnosis"]
         for i in range(0,20):
             title.append("ROI")
-        tsv_w.writerow(title)  
-    gen_samples()
+        tsv_w.writerow(title)
+
+    with open('covariate_feature.tsv', 'w') as f:
+        tsv_w = csv.writer(f, delimiter='\t')
+        title=["ID", "age", "sex","diagnosis"]
+        for i in range(0,20):
+            title.append("ROI")
+        tsv_w.writerow(title)
+
+    gen_samples(TRAIN)
+    sample_id =0
+    gen_samples(TEST)
+   

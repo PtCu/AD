@@ -116,7 +116,7 @@ def train(featureFile,covFile, outFile, numClusters, lambda1=10.0, lambda2=100.0
     sys.stdout.write("Finished.\n")
 
 
-def test(featureFile,covFile, outFile, modelFile):
+def test(dataFile, outFile, modelFile):
     """
     CHIMERA--
     Clustering heterogenous disease effects via distribution matching of imaging patterns.
@@ -154,19 +154,19 @@ def test(featureFile,covFile, outFile, modelFile):
     """
 
     # check input
-    if not os.path.exists(featureFile):
-        sys.stdout.write("File " + featureFile + " not found\n")
+    if not os.path.exists(dataFile):
+        sys.stdout.write("File " + dataFile + " not found\n")
         sys.exit(1)
     if not os.path.exists(modelFile):
         sys.stdout.write("Model " + modelFile + " not found\n")
         sys.exit(1)
-    if featureFile == outFile:
+    if dataFile == outFile:
         sys.stdout.write("Input file and output file name should not be the same.\n")
         sys.exit(1)
 
     # run optimzation
     sys.stdout.write("Starting CHIMERA clustering...\n")
-    clustering_test(featureFile,covFile,outFile,modelFile)
+    clustering_test(dataFile,outFile,modelFile)
     
     # check output
     if not os.path.exists(outFile):
