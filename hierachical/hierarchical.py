@@ -1,9 +1,11 @@
 # coding: utf-8
-# 层次聚类https://github.com/hongweipeng/learn_ai_example/blob/master/hierarchical_example.py
+# 层次聚类 https://github.com/hongweipeng/learn_ai_example/blob/master/hierarchical_example.py
 import math
 import numpy as np
 from sklearn import datasets
 from sklearn import cluster
+
+K=3 # 0为NC，1为1型患者，2为2型患者
 
 def euler_distance(point1: np.ndarray, point2: list) -> float:
     """
@@ -96,10 +98,10 @@ class Hierarchical(object):
 
 iris = datasets.load_iris()
 
-my = Hierarchical(4)
+my = Hierarchical(3)
 my.fit(iris.data)
 print(np.array(my.labels))
 
-sk = cluster.AgglomerativeClustering(4)
+sk = cluster.AgglomerativeClustering(3)
 sk.fit(iris.data)
 print(sk.labels_)

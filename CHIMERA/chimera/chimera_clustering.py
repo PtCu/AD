@@ -53,3 +53,5 @@ def clustering(feature_tsv, output_dir, k, weight_covariate=-1.0, weight_site=10
     clustering_main(feature_tsv, output_dir, config_arg)
 
     print('Finish...')
+
+    return config_arg

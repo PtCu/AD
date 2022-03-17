@@ -52,7 +52,7 @@ def gen_a_nc_sample():
     #随着年龄的自然萎缩作用量
     volume_size-=atrophy
     #归一化
-    #volume_size=normalization(volume_size)
+    volume_size=normalization(volume_size)
     #type为0时分开保存feature和covariate
     item.append(sample_id)
     item.append(NC_TYPE)
@@ -80,7 +80,7 @@ def gen_a_pc_sample(type):
     #随着年龄的自然萎缩作用量
     volume_size-=atrophy
      #归一化
-    #volume_size=normalization(volume_size)
+    volume_size=normalization(volume_size)
 
     #添加人为标记的萎缩量
     #前250个为1型

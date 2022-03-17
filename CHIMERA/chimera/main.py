@@ -20,10 +20,10 @@ test_data = cwd_path+"/CHIMERA/data/simulated_data.tsv"
 
 
 if __name__ == "__main__":
-    # chimera_clustering.clustering(test_data, output_dir,k)
-    # f = open(model_file,'rb')
-    # data = pickle.load(f)
-    # print(data)
+    config=chimera_clustering.clustering(test_data, output_dir, k)
+    f = open(model_file, 'rb')
+    data = pickle.load(f)
+    print(data)
 
     with open(output_dir+'/output.tsv') as f:
         out_label = numpy.asarray(list(csv.reader(f)))
@@ -35,11 +35,8 @@ if __name__ == "__main__":
 
     measure = ARI(true_label, out_label)
 
-    sys.stdout.write("Test Complete, output labels in test/ folder.\n")
-    sys.stdout.write(
-        "Clustering test samples yields an adjusted rand index of %.3f with ground truth labels.\n" % measure)
-    if measure >= 0.9:
-        sys.stdout.write("Test is successful.\n")
 
-    with open(output_dir+'/outcome.txt', 'a') as f:  # 'a'表示append,即在原来文件内容后继续写数据（不清楚原有数据）
-        f.write("ARI: "+str(measure))
+    with open(output_dir+'/outcome.txt','a') as f:
+        f.write("Config:\n")
+        f.write(str(config))
+        f.write("ARI: " + str(measure))
