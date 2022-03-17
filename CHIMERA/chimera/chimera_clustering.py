@@ -9,9 +9,9 @@ __maintainer__ = "Junhao Wen"
 __email__ = "junhao.wen89@gmail.com"
 __status__ = "Maintaining"
 
-def clustering(feature_tsv, output_dir, k, covariate_tsv, weight_covariate=-1.0, weight_site=10, lambda_b=10.0,
+def clustering(feature_tsv, output_dir, k, weight_covariate=-1.0, weight_site=10, lambda_b=10.0,
                lambda_A=100.0, transformation_type='affine', tol=0.001, max_iteration=1000, num_initialization_run=3,
-               save_model=True, standardization_method='zscore', saving_criterion='reproducibility', verbose=False):
+               save_model=True, standardization_method='zscore', saving_criterion='reproducibility', verbose=True):
     """
     Clustering heterogenous disease effects via distribution matching of imaging patterns.
     Ref: https://pubmed.ncbi.nlm.nih.gov/26452275/
@@ -50,6 +50,6 @@ def clustering(feature_tsv, output_dir, k, covariate_tsv, weight_covariate=-1.0,
     'norm': standardization_method, 'mode': saving_criterion, 'quiet': True}
 
     ## go into the core function of chimera
-    clustering_main(feature_tsv, covariate_tsv, output_dir, config_arg)
+    clustering_main(feature_tsv, output_dir, config_arg)
 
     print('Finish...')
