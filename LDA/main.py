@@ -1,3 +1,6 @@
+from typing import Counter
+import lda
+import lda.datasets
 from pdb import main
 
 import os
@@ -13,15 +16,16 @@ from sklearn import cluster
 
 cwd_path = os.getcwd()
 
-output_file_with_cov = cwd_path+"/hierachical/output/output_with_cov.tsv"
+output_file = cwd_path+"/LDA/output/output.tsv"
 
-output_file_without_cov = cwd_path+"/hierachical/output/output_without_cov.tsv"
+test_data = cwd_path+"/LDA/data/simulated_data.tsv"
 
-test_data = cwd_path+"/hierachical/data/simulated_data.tsv"
-
-outcome_file = cwd_path+"/hierachical/output/oucome.txt"
+outcome_file = cwd_path+"/LDA/output/oucome.txt"
 
 K = 2
+
+PT_NUMS = 500
+ROI_NUMS = 20
 
 
 def read_data():
@@ -51,7 +55,32 @@ def read_data():
             ID = data[:, np.nonzero(header == 'ID')[0]]
             ID = ID[group == 1]
 
-    return feat_cov, feat_img, ID, group
+    return feat_cov, np.around(feat_img, decimals=4), ID, group
+
+
+def euler_distance(point1, point2):
+    """
+    计算两点之间的欧拉距离，支持多维
+    """
+    distance = 0.0
+    for a, b in zip(point1, point2):
+        distance += math.pow(a - b, 2)
+    return math.sqrt(distance)
+
+# 用某种方法来度量两个向量的相似度，匹配到最为相似的那个subtype上
+
+
+def get_subtype(ROIS, subtypes, k):
+
+    ans = 0
+    min_dis = float('inf')
+    for i in range(k):
+        subtype = subtypes[i]
+        dis = euler_distance(ROIS, subtype)
+        if dis < min_dis:
+            min_dis = dis
+            ans = i
+    return ans
 
 
 def write_outputfile(output_file, ID, label, true_label, outcome_file, name):
@@ -82,28 +111,39 @@ if __name__ == "__main__":
 
     feat_cov, feat_img, ID, group = read_data()
 
-    feat_all = np.hstack((feat_cov, feat_img))
-
     feat_img = np.transpose(feat_img)
 
-    x_img = feat_img[:, group == 1]  # patients
-    x_img = np.transpose(x_img)
+    x_img = np.transpose(feat_img[:, group == 1])  # patients
 
-    sk = cluster.AgglomerativeClustering(K)
+    x_img_flatten = x_img.flatten()
+    count_data = Counter(x_img_flatten)
+    X = np.zeros([PT_NUMS, ROI_NUMS], dtype=int)
 
-    feat_all = np.transpose(feat_all)
-    x_all = feat_all[:, group == 1]  # patients
-    x_all = np.transpose(x_all)
+    for i in range(PT_NUMS):
+        for j in range(ROI_NUMS):
+            X[i][j] = count_data[x_img[i][j]]
+
+    model = lda.LDA(n_topics=2, n_iter=150, random_state=1)
+    model.fit(X)  # model.fit_transform(X) is also available
+    topic_word = model.topic_word_  # model.components_ also works
+
+    subtypes = {}
+
+    n_top_words = ROI_NUMS  # 选取概率最大的20个ROI作为亚型的主题
+    for i, topic_dist in enumerate(topic_word):
+        topic_words = np.array(x_img_flatten)[
+            np.argsort(topic_dist)][:-(n_top_words+1):-1]
+        with open("pattern.txt", 'a') as f:
+            f.write('Type {}: {}'.format(i, topic_words))
+            subtypes[i] = topic_words
 
     true_label = numpy.append(numpy.ones(250), numpy.ones(250)*2)
-    # With covariate
-    sk.fit(x_all)
-    label_with_cov = sk.labels_
-    write_outputfile(output_file_with_cov, ID, label_with_cov,
-                     true_label, outcome_file, "Hierachical with covariate")
 
-    # Without covariate
-    sk.fit(x_img)
-    label_without_cov = sk.labels_
-    write_outputfile(output_file_without_cov, ID, label_without_cov,
-                     true_label, outcome_file, "Hierachical without covariate")
+    out_label = np.zeros(PT_NUMS)
+
+    for i in range(PT_NUMS):
+        ROIS = x_img[i]
+        out_label[i] = get_subtype(ROIS, subtypes, K)
+
+    write_outputfile(output_file, ID, out_label,
+                     true_label, outcome_file, "LDA")
