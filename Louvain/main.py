@@ -141,8 +141,7 @@ if __name__ == "__main__":
         G.add_edge(edge[0], edge[1],  weight=distance)
 
     # 返回的partition为每个节点最终归属的subtype
-    # resolution表示了一个社区大小，在[-1,1]之间。1表示为所有节点划分为一个社区，-1表示每个节点一个社区
+    # resolution表示了一个社区大小。1表示为所有节点划分为一个社区，某些数（大于1）表示每个节点一个社区
     # 调整resolution，以使其最终能划分为两个社区
-    partition = community_louvain.best_partition(G, resolution=-1)
+    partition = community_louvain.best_partition(G, resolution=0)
 
-    a = 1

@@ -35,8 +35,8 @@ if __name__ == "__main__":
 
     measure = ARI(true_label, out_label)
 
-
     with open(output_dir+'/outcome.txt','a') as f:
         f.write("Config:\n")
         f.write(str(config))
-        f.write("ARI: " + str(measure))
+        f.write("\nARI1: " + str(measure))
+

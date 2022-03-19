@@ -138,6 +138,6 @@ if __name__=="__main__":
     final_df=df.set_index("ID")
     
     # 保存 dataframe
-    final_df.to_csv('simulated_data.tsv',sep='\t')
+    final_df.to_csv('simulated_data_test.tsv',sep='\t')
 
    
