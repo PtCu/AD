@@ -30,12 +30,13 @@ class KMedianClusterer:
         self.ndarray = ndarray
         self.cluster_num = cluster_num
         self.points = self.__pick_start_point(ndarray, cluster_num)
+        self.label=np.zeros(len(ndarray),dtype=int)
 
     def cluster(self):
         result = []
         for i in range(self.cluster_num):
             result.append([])
-        for item in self.ndarray:
+        for idx,item in enumerate(self.ndarray):
             distance_min = sys.maxsize
             index = -1
             for i in range(len(self.points)):
@@ -43,6 +44,7 @@ class KMedianClusterer:
                 if distance < distance_min:
                     distance_min = distance
                     index = i
+            self.label[idx]=index
             result[index] = result[index] + [item.tolist()]
 
         new_center = []
@@ -50,7 +52,7 @@ class KMedianClusterer:
             new_center.append(self.__center(item).tolist())
         # 中心点未改变，说明达到稳态，结束递归
         if (self.points == new_center).all():
-            return result
+            return self.label
 
         self.points = np.array(new_center)
         return self.cluster()
