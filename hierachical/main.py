@@ -95,6 +95,14 @@ def get_data(filename):
     return x_img, x_all, ID
 
 
+def clustering(X):
+    sk = cluster.AgglomerativeClustering(K)
+
+    sk.fit(X)
+    label = sk.labels_
+    return label
+
+
 if __name__ == "__main__":
 
     x_img, x_all, ID = get_data(simulated_data)
@@ -103,13 +111,11 @@ if __name__ == "__main__":
 
     true_label = numpy.append(numpy.zeros(250), numpy.ones(250))
     # With covariate
-    sk.fit(x_all)
-    label_with_cov = sk.labels_
+    label_with_cov = clustering(x_all)
     write_outputfile(output_file_with_cov, ID, label_with_cov,
                      true_label, outcome_file, "Hierachical with covariate")
 
     # Without covariate
-    sk.fit(x_img)
-    label_without_cov = sk.labels_
+    label_without_cov = clustering(x_img)
     write_outputfile(output_file_without_cov, ID, label_without_cov,
                      true_label, outcome_file, "Hierachical without covariate")

@@ -4,3 +4,4 @@ from sklearn.decomposition import NMF
 model = NMF(n_components=2, init='random', random_state=0)
 W = model.fit_transform(X)
 H = model.components_
+
