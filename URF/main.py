@@ -1,3 +1,5 @@
+from scipy import rand
+from sklearn import cluster, manifold
 from pdb import main
 
 import os
@@ -10,16 +12,18 @@ import numpy as np
 import math
 import numpy as np
 from sklearn import cluster
+from sklearn.ensemble import RandomTreesEmbedding
+from sklearn import manifold
 
 cwd_path = os.getcwd()
 
-output_file_with_cov = cwd_path+"/hierachical/output/output_with_cov.tsv"
+output_file_with_cov = cwd_path+"/URF/output/output_with_cov.tsv"
 
-output_file_without_cov = cwd_path+"/hierachical/output/output_without_cov.tsv"
+output_file_without_cov = cwd_path+"/URF/output/output_without_cov.tsv"
 
-simulated_data = cwd_path+"/hierachical/data/simulated_data.tsv"
+simulated_data = cwd_path+"/URF/data/simulated_data.tsv"
 
-outcome_file = cwd_path+"/hierachical/output/oucome.txt"
+outcome_file = cwd_path+"/URF/output/oucome.txt"
 
 K = 2
 
@@ -95,21 +99,40 @@ def get_data(filename):
     return x_img, x_all, ID
 
 
+def clustering(X):
+    random_trees = RandomTreesEmbedding().fit(X)
+
+    X_sparse_leaves = random_trees.fit_transform(X)
+    X_sparse_leaves.toarray()
+    projector = manifold.TSNE()
+    X_sparse_embedding = projector.fit_transform(X_sparse_leaves)
+
+    clusterer = cluster.KMeans(n_clusters=2)
+    clusterer.fit(X_sparse_embedding)
+    label = clusterer.labels_
+    return label
+
+
 if __name__ == "__main__":
 
     x_img, x_all, ID = get_data(simulated_data)
 
-    sk = cluster.AgglomerativeClustering(K)
+    """
+    Random Forest clustering works as follows
+    1. Construct a dissimilarity measure using RF
+    2. Use an embedding algorithm (MDS, TSNE) to embed into a 2D space preserving that dissimilarity measure.
+    3. Cluster using K-means or K-medoids
+    """
+    label1 = clustering(x_all)
+    label2 = clustering(x_img)
 
     true_label = numpy.append(numpy.zeros(250), numpy.ones(250))
     # With covariate
-    sk.fit(x_all)
-    label_with_cov = sk.labels_
-    write_outputfile(output_file_with_cov, ID, label_with_cov,
+
+    write_outputfile(output_file_with_cov, ID, label1,
                      true_label, outcome_file, "Hierachical with covariate")
 
     # Without covariate
-    sk.fit(x_img)
-    label_without_cov = sk.labels_
-    write_outputfile(output_file_without_cov, ID, label_without_cov,
+
+    write_outputfile(output_file_without_cov, ID, label2,
                      true_label, outcome_file, "Hierachical without covariate")

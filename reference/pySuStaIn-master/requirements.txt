@@ -1,0 +1,11 @@
+#you should have python 3.7 or higher to use numpy 1.18
+numpy>=1.18
+scipy
+matplotlib>=3.0.0
+pathos
+sklearn
+pandas
+pybind11
+awkde @ git+https://github.com/noxtoby/awkde.git
+kde_ebm @ git+https://github.com/ucl-pond/kde_ebm.git
+tqdm
