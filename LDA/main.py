@@ -1,3 +1,4 @@
+from tkinter import N
 from typing import Counter
 import lda
 import lda.datasets
@@ -12,7 +13,6 @@ import pandas as pd
 import numpy as np
 import math
 import numpy as np
-from sklearn import cluster
 
 cwd_path = os.getcwd()
 

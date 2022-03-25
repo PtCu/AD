@@ -1,3 +1,4 @@
+from operator import imod
 import numpy as np
 import csv
 
@@ -5,6 +6,7 @@ from pip import main
 from pandas import DataFrame,Series
 
 import pandas as pd
+import os
 # # 三个字段 name, site, age
 # nme = ["Google", "Runoob", "Taobao", "Wiki"]
 # st = ["www.google.com", "www.runoob.com", "www.taobao.com", "www.wikipedia.org"]
@@ -31,7 +33,12 @@ PT_TYPE=1
 
 DATA_SET=0
 
-file_name="simulated_data.tsv"
+
+cwd_path = os.getcwd()
+
+data_dir=cwd_path+"/data/"
+
+file_name = os.path.join(data_dir,"simulated_data.tsv")
 #COVAR1为年龄，COVAR2为性别
 sample_id=int(0)
 
@@ -41,7 +48,7 @@ def normalization(data):
     _range = np.max(data) - np.min(data)
     return (data - np.min(data)) / _range
     
-def gen_a_nc_sample():
+def gen_a_nc_sample(isNomalized=True):
     item=[]
     global sample_id
     sample_id+=1
@@ -52,7 +59,8 @@ def gen_a_nc_sample():
     #随着年龄的自然萎缩作用量
     volume_size-=atrophy
     #归一化
-    volume_size=normalization(volume_size)
+    if isNomalized:
+        volume_size=normalization(volume_size)
     #type为0时分开保存feature和covariate
     item.append(sample_id)
     item.append(NC_TYPE)
@@ -68,9 +76,8 @@ def gen_a_nc_sample():
     #     tsv_w.writerow(a_row) 
         
     
-
-def gen_a_pc_sample(type):
-    item=[]
+def gen_a_pc_sample(type, isNomalized=True):
+    item = []
     global sample_id
     sample_id+=1
     volume_size=np.random.normal(1, 0.1,20)
@@ -80,7 +87,8 @@ def gen_a_pc_sample(type):
     #随着年龄的自然萎缩作用量
     volume_size-=atrophy
      #归一化
-    volume_size=normalization(volume_size)
+    if isNomalized:
+        volume_size=normalization(volume_size)
 
     #添加人为标记的萎缩量
     #前250个为1型
@@ -138,6 +146,6 @@ if __name__=="__main__":
     final_df=df.set_index("ID")
     
     # 保存 dataframe
-    final_df.to_csv('simulated_data_test.tsv',sep='\t')
+    final_df.to_csv(file_name,sep='\t')
 
    

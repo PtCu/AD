@@ -20,11 +20,11 @@ from typing import Counter
 
 cwd_path = os.getcwd()
 
-output_file = cwd_path+"/LDA/output/output.tsv"
+output_file = cwd_path+"/Louvain/output/output.tsv"
 
-test_data = cwd_path+"/LDA/data/simulated_data.tsv"
+test_data = cwd_path+"/Louvain/data/simulated_data.tsv"
 
-outcome_file = cwd_path+"/LDA/output/oucome.txt"
+outcome_file = cwd_path+"/Louvain/output/oucome.txt"
 
 K = 2
 
@@ -143,5 +143,14 @@ if __name__ == "__main__":
     # 返回的partition为每个节点最终归属的subtype
     # resolution表示了一个社区大小。1表示为所有节点划分为一个社区，某些数（大于1）表示每个节点一个社区
     # 调整resolution，以使其最终能划分为两个社区
+    # 最终的partition为一个字典，key为ID，value为所属社区号
     partition = community_louvain.best_partition(G, resolution=0)
 
+    output_label = []
+    for value in partition.values():
+        output_label.append(value)
+
+    true_label = numpy.append(numpy.ones(250), numpy.ones(250)*2)
+
+    write_outputfile(output_file, ID, output_label,
+                     true_label, outcome_file, "Louvain")
