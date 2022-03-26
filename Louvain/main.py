@@ -9,10 +9,8 @@ import networkx as nx
 import os
 import sys
 import csv
-import numpy
 from sklearn.metrics import adjusted_rand_score as ARI
 import pandas as pd
-import numpy as np
 import math
 import numpy as np
 from sklearn import cluster
