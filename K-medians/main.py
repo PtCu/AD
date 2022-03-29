@@ -5,11 +5,7 @@ import sys
 import csv
 import numpy
 from sklearn.metrics import adjusted_rand_score as ARI
-import pandas as pd
 import numpy as np
-import math
-import numpy as np
-from KMediansPy.KMedians import KMedians
 from sklearn import cluster
 import random
 cwd_path = os.getcwd()
@@ -23,7 +19,6 @@ simulated_data = cwd_path+"/K-medians/data/simulated_data.tsv"
 outcome_file = cwd_path+"/K-medians/output/oucome.txt"
 
 K = 2
-
 
 class KMedianClusterer:
     def __init__(self, ndarray, cluster_num):
@@ -60,7 +55,7 @@ class KMedianClusterer:
     def __center(self, list):
         '''计算一组坐标的中心点
         '''
-        # 计算每一列的平均值
+        # 计算每一列的中位数
         return np.median(list, axis=0)
 
     def __distance(self, p1, p2):

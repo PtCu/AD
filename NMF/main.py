@@ -1,5 +1,4 @@
-from scipy import rand
-from sklearn import cluster, manifold
+
 from pdb import main
 
 import os
@@ -7,14 +6,11 @@ import sys
 import csv
 import numpy
 from sklearn.metrics import adjusted_rand_score as ARI
-import pandas as pd
 import numpy as np
 from sklearn.decomposition import NMF
 import numpy as np
-from sklearn import cluster
-from sklearn.ensemble import RandomTreesEmbedding
-from sklearn import manifold
-
+from scipy.spatial.distance import pdist
+from typing import Counter
 cwd_path = os.getcwd()
 
 output_file_with_cov = cwd_path+"/NMF/output/output_with_cov.tsv"
@@ -26,6 +22,9 @@ simulated_data = cwd_path+"/NMF/data/simulated_data.tsv"
 outcome_file = cwd_path+"/NMF/output/oucome.txt"
 
 K = 2
+
+PT_NUMS = 500
+ROI_NUMS = 20
 
 
 def read_data(filename):
@@ -55,7 +54,7 @@ def read_data(filename):
             ID = data[:, np.nonzero(header == 'ID')[0]]
             ID = ID[group == 1]
 
-    return feat_cov, feat_img, ID, group
+        return feat_cov, np.around(feat_img, decimals=3), ID, group
 
 
 def write_outputfile(output_file, ID, label, true_label, outcome_file, name):
@@ -99,40 +98,82 @@ def get_data(filename):
     return x_img, x_all, ID
 
 
-def clustering(X):
-    X=np.transpose(X)
-    #n_component 表示多少样本被保留
-    model = NMF()
+def jaccard_distance(x, y):
+    """
+    计算两个无序向量之间的欧拉距离，支持多维
+    """
+    X = np.vstack([x, y])
+    d2 = pdist(X, 'jaccard')
+    return d2[0]
 
-    W = model.fit_transform(X)
-    H = model.components_
 
-    clusterer = cluster.AgglomerativeClustering(n_clusters=K)
-    clusterer.fit(H)
-    label = clusterer.labels_
+def get_subtype(ROIS, subtypes, k):
+    ans = 0
+    min_dis = float('inf')
+    for i in range(k):
+        subtype = subtypes[i]
+        dis = jaccard_distance(ROIS, subtype)
+        if dis < min_dis:
+            min_dis = dis
+            ans = i
+    return ans
+
+
+def clustering1(X, k):
+    model = NMF(n_components=k)
+    A = model.fit_transform(X)  
+
+    label = np.zeros(PT_NUMS, dtype=int)
+
+    for i in range(len(A)):
+        subtype = 0
+        max_prob = 0
+        for j in range(k):
+            if(A[i][j] > max_prob):
+                max_prob = A[i][j]
+                subtype = j
+        label[i] = subtype
     return label
+
+
+def clustering2(X, k, x_img_flatten):
+    # n_component 表示多少样本被保留
+    model = NMF(n_components=k)
+    W = model.fit_transform(X)  # model.fit_transform(X) is also available
+    topic_word = model.components_  # model.components_ also works
+
+    subtypes = {}
+    n_top_words = ROI_NUMS  # 选取概率最大的20个ROI作为亚型的主题
+    for i, topic_dist in enumerate(topic_word):
+        topic_words = np.array(x_img_flatten)[
+            np.argsort(topic_dist)][:-(n_top_words+1):-1]
+        with open("pattern.txt", 'a') as f:
+            f.write('Type {}: {}'.format(i, topic_words))
+            subtypes[i] = topic_words
+
+    out_label = np.zeros(PT_NUMS)
+    for i in range(PT_NUMS):
+        ROIS = x_img[i]
+        out_label[i] = get_subtype(ROIS, subtypes, K)
+    return out_label
 
 
 if __name__ == "__main__":
 
     x_img, x_all, ID = get_data(simulated_data)
 
-    """
-    Random Forest clustering works as follows
-    1. Construct a dissimilarity measure using RF
-    2. Use an embedding algorithm (MDS, TSNE) to embed into a 2D space preserving that dissimilarity measure.
-    3. Cluster using K-means or K-medoids
-    """
-    label1 = clustering(x_all)
-    label2 = clustering(x_img)
+    x_img_flatten = x_img.flatten()
+    count_data = Counter(x_img_flatten)
+    X = np.zeros([PT_NUMS, ROI_NUMS], dtype=int)
+
+    for i in range(PT_NUMS):
+        for j in range(ROI_NUMS):
+            X[i][j] = count_data[x_img[i][j]]
+
+    label = clustering1(X, K)
 
     true_label = numpy.append(numpy.zeros(250), numpy.ones(250))
-    # With covariate
-
-    write_outputfile(output_file_with_cov, ID, label1,
-                     true_label, outcome_file, "Hierachical with covariate")
 
     # Without covariate
-
-    write_outputfile(output_file_without_cov, ID, label2,
+    write_outputfile(output_file_without_cov, ID, label,
                      true_label, outcome_file, "Hierachical without covariate")

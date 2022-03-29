@@ -131,14 +131,15 @@ def get_label(node_ids, arc_list):
         dag.add_edge(arc.source, arc.target)
 
     output_dict = {}
-    i = 0
-
+    #簇的id
+    id = 0
+    #将对应连通分量上的叶节点归到相应的簇上
     for c in nx.weakly_connected_components(dag):
         nodeSet = dag.subgraph(c).nodes()
-        i = i + 1
+        id = id + 1
         for node in nodeSet:
             if dag.in_degree(node) == 1 and dag.out_degree(node) == 0:
-                output_dict[node] = i
+                output_dict[node] = id
     output_label = np.zeros(len(output_dict), dtype=int)
     for key in output_dict:
         output_label[key] = output_dict[key]

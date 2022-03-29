@@ -7,22 +7,6 @@ from pandas import DataFrame,Series
 
 import pandas as pd
 import os
-# # 三个字段 name, site, age
-# nme = ["Google", "Runoob", "Taobao", "Wiki"]
-# st = ["www.google.com", "www.runoob.com", "www.taobao.com", "www.wikipedia.org"]
-# ag = [90, 40, 80, 98]
-   
-# # 字典https://www.jb51.net/article/185302.htm
-# dict = {'name': nme, 'site': st, 'age': ag}
-
-# title=["ID","GROUP", "COVAR", "COVAR"]
-# for i in range(0,20):
-#         title.append("ROI")
-
-# df = pd.DataFrame(dict,title)
- 
-# # 保存 dataframe
-# df.to_csv('site.csv')
 
 TOTAL_NUM=500
 
@@ -61,7 +45,7 @@ def gen_a_nc_sample(isNomalized=True):
     #归一化
     if isNomalized:
         volume_size=normalization(volume_size)
-    #type为0时分开保存feature和covariate
+
     item.append(sample_id)
     item.append(NC_TYPE)
     item.append(DATA_SET)
@@ -69,11 +53,7 @@ def gen_a_nc_sample(isNomalized=True):
     item.append(sex)
     item.extend(volume_size)
     data.append(item)
-    # with open(file_name, 'a',newline='') as f:
-    #     tsv_w = csv.writer(f, delimiter='\t')
-    #     l=np.array([int(sample_id),NC_TYPE, age, sex])  
-    #     a_row=np.append(l,volume_size)
-    #     tsv_w.writerow(a_row) 
+  
         
     
 def gen_a_pc_sample(type, isNomalized=True):
@@ -90,32 +70,30 @@ def gen_a_pc_sample(type, isNomalized=True):
     if isNomalized:
         volume_size=normalization(volume_size)
 
+
+    item.append(sample_id)
     #添加人为标记的萎缩量
     #前250个为1型
     if(type==0):
         #0到9号ROI区域标记为萎缩
         for i in range(0,9):
             volume_size[i]*=0.85
+        item.append(1)
     #后250个为2型
     else:
         #0,1,5,6,10,11,15,16号区域标记为萎缩
         for i in range(0,4):
             volume_size[i*5]*=0.85
             volume_size[i*5+1]*=0.85
-
-    item.append(sample_id)
-    item.append(PT_TYPE)
+        item.append(2)
+    
     item.append(DATA_SET)
     item.append(age)
     item.append(sex)
     item.extend(volume_size)
     data.append(item)
 
-    # with open(file_name, 'a',newline='') as f:
-    #     tsv_w = csv.writer(f, delimiter='\t')
-    #     l=np.array([int(sample_id),PT_TYPE, age, sex])  
-    #     a_row=np.append(l,volume_size)
-    #     tsv_w.writerow(a_row) 
+
 
 
 

@@ -1,24 +1,19 @@
-from tkinter import N
 from typing import Counter
 import lda
 import lda.datasets
 from pdb import main
-
 import os
 import sys
 import csv
 import numpy
 from sklearn.metrics import adjusted_rand_score as ARI
-import pandas as pd
 import numpy as np
-import math
-import numpy as np
-
+from scipy.spatial.distance import pdist
 cwd_path = os.getcwd()
 
 output_file = cwd_path+"/LDA/output/output.tsv"
 
-test_data = cwd_path+"/LDA/data/simulated_data.tsv"
+simulated_data = cwd_path+"/LDA/data/simulated_data.tsv"
 
 outcome_file = cwd_path+"/LDA/output/oucome.txt"
 
@@ -28,11 +23,17 @@ PT_NUMS = 500
 ROI_NUMS = 20
 
 
-def read_data():
+def stable_sigmoid(x):
+
+    sig = np.where(x < 0, np.exp(x)/(1 + np.exp(x)), 1/(1 + np.exp(-x)))
+    return sig
+
+
+def read_data(filename):
     sys.stdout.write('\treading data...\n')
     feat_cov = None
     ID = None
-    with open(test_data) as f:
+    with open(filename) as f:
         data = list(csv.reader(f, delimiter='\t'))
         header = np.asarray(data[0])
         if 'GROUP' not in header:
@@ -55,28 +56,26 @@ def read_data():
             ID = data[:, np.nonzero(header == 'ID')[0]]
             ID = ID[group == 1]
 
-    return feat_cov, np.around(feat_img, decimals=4), ID, group
+    return feat_cov, np.around(feat_img, decimals=3), ID, group
 
 
-def euler_distance(point1, point2):
+def jaccard_distance(x, y):
     """
-    计算两点之间的欧拉距离，支持多维
+    计算两个无序向量之间的欧拉距离，支持多维
     """
-    distance = 0.0
-    for a, b in zip(point1, point2):
-        distance += math.pow(a - b, 2)
-    return math.sqrt(distance)
+    X = np.vstack([x, y])
+    d2 = pdist(X, 'jaccard')
+    return d2[0]
 
 # 用某种方法来度量两个向量的相似度，匹配到最为相似的那个subtype上
 
 
 def get_subtype(ROIS, subtypes, k):
-
     ans = 0
     min_dis = float('inf')
     for i in range(k):
         subtype = subtypes[i]
-        dis = euler_distance(ROIS, subtype)
+        dis = jaccard_distance(ROIS, subtype)
         if dis < min_dis:
             min_dis = dis
             ans = i
@@ -107,13 +106,64 @@ def write_outputfile(output_file, ID, label, true_label, outcome_file, name):
         f.write("ARI: " + str(measure)+'\n')
 
 
-if __name__ == "__main__":
+def get_data(filename):
+    feat_cov, feat_img, ID, group = read_data(filename)
 
-    feat_cov, feat_img, ID, group = read_data()
+    feat_all = np.hstack((feat_cov, feat_img))
 
     feat_img = np.transpose(feat_img)
 
-    x_img = np.transpose(feat_img[:, group == 1])  # patients
+    x_img = feat_img[:, group == 1]  # patients
+    x_img = np.transpose(x_img)
+
+    feat_all = np.transpose(feat_all)
+    x_all = feat_all[:, group == 1]  # patients
+    x_all = np.transpose(x_all)
+
+    return x_img, x_all, ID
+
+
+def clustering1(X, k):
+    model = lda.LDA(n_topics=k, n_iter=150, random_state=1)
+    A = model.fit_transform(X)  # model.fit_transform(X) is also available
+
+    label = np.zeros(PT_NUMS, dtype=int)
+
+    for i in range(len(A)):
+        subtype = 0
+        max_prob = 0
+        for j in range(k):
+            if(A[i][j] > max_prob):
+                max_prob = A[i][j]
+                subtype = j
+        label[i] = subtype
+    return label
+
+
+def clustering2(X, k, x_img_flatten,):
+    model = lda.LDA(n_topics=k, n_iter=150, random_state=1)
+    model.fit(X)  # model.fit_transform(X) is also available
+    topic_word = model.topic_word_  # model.components_ also works
+
+    subtypes={}
+    n_top_words = ROI_NUMS  # 选取概率最大的20个ROI作为亚型的主题
+    for i, topic_dist in enumerate(topic_word):
+        topic_words = np.array(x_img_flatten)[
+            np.argsort(topic_dist)][:-(n_top_words+1):-1]
+        with open("pattern.txt", 'a') as f:
+            f.write('Type {}: {}'.format(i, topic_words))
+            subtypes[i] = topic_words
+
+    out_label = np.zeros(PT_NUMS)
+    for i in range(PT_NUMS):
+        ROIS = x_img[i]
+        out_label[i] = get_subtype(ROIS, subtypes, K)
+    return out_label
+
+
+if __name__ == "__main__":
+
+    x_img, x_all, ID = get_data(simulated_data)
 
     x_img_flatten = x_img.flatten()
     count_data = Counter(x_img_flatten)
@@ -123,27 +173,9 @@ if __name__ == "__main__":
         for j in range(ROI_NUMS):
             X[i][j] = count_data[x_img[i][j]]
 
-    model = lda.LDA(n_topics=2, n_iter=150, random_state=1)
-    model.fit(X)  # model.fit_transform(X) is also available
-    topic_word = model.topic_word_  # model.components_ also works
+    out_label = clustering1(X, K)
 
-    subtypes = {}
-
-    n_top_words = ROI_NUMS  # 选取概率最大的20个ROI作为亚型的主题
-    for i, topic_dist in enumerate(topic_word):
-        topic_words = np.array(x_img_flatten)[
-            np.argsort(topic_dist)][:-(n_top_words+1):-1]
-        with open("pattern.txt", 'a') as f:
-            f.write('Type {}: {}'.format(i, topic_words))
-            subtypes[i] = topic_words
-
-    true_label = numpy.append(numpy.ones(250), numpy.ones(250)*2)
-
-    out_label = np.zeros(PT_NUMS)
-
-    for i in range(PT_NUMS):
-        ROIS = x_img[i]
-        out_label[i] = get_subtype(ROIS, subtypes, K)
+    true_label = numpy.append(numpy.zeros(250), numpy.ones(250))
 
     write_outputfile(output_file, ID, out_label,
                      true_label, outcome_file, "LDA")

@@ -1,19 +1,14 @@
 # https://resetran.top/community-detection/
 # https://resetran.top/community-detection/#toc-heading-29
-from dis import dis
 import itertools
-from community import community_louvain, induced_graph
-import matplotlib.cm as cm
-import matplotlib.pyplot as plt
+from community import community_louvain
 import networkx as nx
 import os
 import sys
 import csv
 from sklearn.metrics import adjusted_rand_score as ARI
-import pandas as pd
 import math
 import numpy as np
-from sklearn import cluster
 from typing import Counter
 
 cwd_path = os.getcwd()
@@ -97,10 +92,10 @@ def write_outputfile(output_file, ID, label, true_label, outcome_file, name):
                 f.write('%s,%d\n' % (ID[i][0], label[i]+1))
 
     with open(output_file) as f:
-        out_label = numpy.asarray(list(csv.reader(f)))
+        out_label = np.asarray(list(csv.reader(f)))
 
-    idx = numpy.nonzero(out_label[0] == "Cluster")[0]
-    out_label = out_label[1:, idx].flatten().astype(numpy.int)
+    idx = np.nonzero(out_label[0] == "Cluster")[0]
+    out_label = out_label[1:, idx].flatten().astype(np.int)
 
     measure = ARI(true_label, out_label)
 
@@ -142,13 +137,13 @@ if __name__ == "__main__":
     # resolution表示了一个社区大小。1表示为所有节点划分为一个社区，某些数（大于1）表示每个节点一个社区
     # 调整resolution，以使其最终能划分为两个社区
     # 最终的partition为一个字典，key为ID，value为所属社区号
-    partition = community_louvain.best_partition(G, resolution=0)
+    partition = community_louvain.best_partition(G, resolution=1.5)
 
     output_label = []
     for value in partition.values():
         output_label.append(value)
 
-    true_label = numpy.append(numpy.ones(250), numpy.ones(250)*2)
+    true_label = np.append(np.ones(250), np.ones(250)*2)
 
     write_outputfile(output_file, ID, output_label,
                      true_label, outcome_file, "Louvain")
