@@ -7,9 +7,8 @@ import sys
 import csv
 import numpy
 from sklearn.metrics import adjusted_rand_score as ARI
-import pandas as pd
 import numpy as np
-import math
+import forest_cluster as rfc
 import numpy as np
 from sklearn import cluster
 from sklearn.ensemble import RandomTreesEmbedding
@@ -100,15 +99,20 @@ def get_data(filename):
 
 
 def clustering(X):
-    random_trees = RandomTreesEmbedding().fit(X)
-
-    X_sparse_leaves = random_trees.fit_transform(X)
-    X_sparse_leaves.toarray()
-    projector = manifold.TSNE()
-    X_sparse_embedding = projector.fit_transform(X_sparse_leaves)
-
-    clusterer = cluster.KMeans(n_clusters=2)
-    clusterer.fit(X_sparse_embedding)
+    """
+    Random Forest clustering works as follows
+    1. Construct a dissimilarity measure using RF
+    2. Use an embedding algorithm (MDS, TSNE) to embed into a 2D space preserving that dissimilarity measure.
+    3. Cluster using K-means or K-medoids
+    """
+    rf = rfc.RandomForestEmbedding(
+        n_estimators=5000, random_state=10, n_jobs=-1, sparse_output=False)
+    leaves = rf.fit_transform(X)
+    projector = manifold.TSNE(
+        n_components=2, random_state=1234, metric='hamming')
+    embedding = projector.fit_transform(leaves)
+    clusterer = cluster.KMeans(n_clusters=K, random_state=1234, n_init=20)
+    clusterer.fit(embedding)
     label = clusterer.labels_
     return label
 
@@ -117,12 +121,6 @@ if __name__ == "__main__":
 
     x_img, x_all, ID = get_data(simulated_data)
 
-    """
-    Random Forest clustering works as follows
-    1. Construct a dissimilarity measure using RF
-    2. Use an embedding algorithm (MDS, TSNE) to embed into a 2D space preserving that dissimilarity measure.
-    3. Cluster using K-means or K-medoids
-    """
     label1 = clustering(x_all)
     label2 = clustering(x_img)
 
