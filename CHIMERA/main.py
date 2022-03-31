@@ -1,13 +1,12 @@
 from pdb import main
 
-import chimera_clustering
+import chimera.chimera_clustering
 import pickle
 import os
-import sys
 import csv
 import numpy
 from sklearn.metrics import adjusted_rand_score as ARI
-import pandas as pd
+
 cwd_path = os.getcwd()
 feature_tsv = cwd_path+"/CHIMERA/data/test_feature.tsv"
 output_dir = cwd_path+"/CHIMERA/output"
@@ -20,7 +19,7 @@ test_data = cwd_path+"/CHIMERA/data/simulated_data.tsv"
 
 
 if __name__ == "__main__":
-    config=chimera_clustering.clustering(test_data, output_dir, k)
+    config=chimera.chimera_clustering.clustering(test_data, output_dir, k)
     f = open(model_file, 'rb')
     data = pickle.load(f)
     print(data)

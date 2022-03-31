@@ -1,27 +1,32 @@
-from scipy import rand
-from sklearn import cluster, manifold
 from pdb import main
-
 import os
 import sys
 import csv
+import numpy
 from sklearn.metrics import adjusted_rand_score as ARI
 import numpy as np
+from smt.applications import MOE
+from smt.problems import LpNorm
+from sklearn import manifold
 import forest_cluster as rfc
-
-
-
 cwd_path = os.getcwd()
 
-output_file_with_cov = cwd_path+"/URF/output/output_with_cov.tsv"
+output_file = cwd_path+"/MOE/output/output.tsv"
 
-output_file_without_cov = cwd_path+"/URF/output/output_without_cov.tsv"
+simulated_data = cwd_path+"/MOE/data/simulated_data.tsv"
 
-simulated_data = cwd_path+"/URF/data/simulated_data.tsv"
-
-outcome_file = cwd_path+"/URF/output/oucome.txt"
+outcome_file = cwd_path+"/MOE/output/oucome.txt"
 
 K = 2
+
+PT_NUMS = 500
+ROI_NUMS = 20
+
+
+def stable_sigmoid(x):
+
+    sig = np.where(x < 0, np.exp(x)/(1 + np.exp(x)), 1/(1 + np.exp(-x)))
+    return sig
 
 
 def read_data(filename):
@@ -66,10 +71,10 @@ def write_outputfile(output_file, ID, label, true_label, outcome_file, name):
                 f.write('%s,%d\n' % (ID[i][0], label[i]+1))
 
     with open(output_file) as f:
-        out_label = np.asarray(list(csv.reader(f)))
+        out_label = numpy.asarray(list(csv.reader(f)))
 
-    idx = np.nonzero(out_label[0] == "Cluster")[0]
-    out_label = out_label[1:, idx].flatten().astype(np.int)
+    idx = numpy.nonzero(out_label[0] == "Cluster")[0]
+    out_label = out_label[1:, idx].flatten().astype(numpy.int)
 
     measure = ARI(true_label, out_label)
 
@@ -95,22 +100,31 @@ def get_data(filename):
     return x_img, x_all, ID
 
 
-def clustering(X):
-    """
-    Random Forest clustering works as follows
-    1. Construct a dissimilarity measure using RF
-    2. Use an embedding algorithm (MDS, TSNE) to embed into a 2D space preserving that dissimilarity measure.
-    3. Cluster using K-means or K-medoids
-    """
+def clustering(X, k):
     rf = rfc.RandomForestEmbedding(
         n_estimators=5000, random_state=10, n_jobs=-1, sparse_output=False)
     leaves = rf.fit_transform(X)
     projector = manifold.TSNE(
         n_components=2, random_state=1234, metric='hamming')
-    embedding = projector.fit_transform(leaves)
-    clusterer = cluster.KMeans(n_clusters=K, random_state=1234, n_init=20)
-    clusterer.fit(embedding)
-    label = clusterer.labels_
+    x_t = projector.fit_transform(leaves)
+    # prob = LpNorm(ndim=2)
+    # y_t = prob(x_t)
+    true_label = numpy.append(numpy.zeros(250), numpy.ones(250))
+    y_t=true_label
+    moe = MOE(smooth_recombination=True, n_clusters=k)
+    moe.set_training_values(x_t, y_t)
+    moe.train()
+    A = moe._proba_cluster(x_t)
+    label = np.zeros(PT_NUMS, dtype=int)
+
+    for i in range(len(A)):
+        subtype = 0
+        max_prob = 0
+        for j in range(k):
+            if(A[i][j] > max_prob):
+                max_prob = A[i][j]
+                subtype = j
+        label[i] = subtype
     return label
 
 
@@ -118,16 +132,9 @@ if __name__ == "__main__":
 
     x_img, x_all, ID = get_data(simulated_data)
 
-    label1 = clustering(x_all)
-    label2 = clustering(x_img)
+    out_label = clustering(x_img, K)
 
-    true_label = np.append(np.zeros(250), np.ones(250))
-    # With covariate
+    true_label = numpy.append(numpy.zeros(250), numpy.ones(250))
 
-    write_outputfile(output_file_with_cov, ID, label1,
-                     true_label, outcome_file, "Hierachical with covariate")
-
-    # Without covariate
-
-    write_outputfile(output_file_without_cov, ID, label2,
-                     true_label, outcome_file, "Hierachical without covariate")
+    write_outputfile(output_file, ID, out_label,
+                     true_label, outcome_file, "MOE")

@@ -10,8 +10,8 @@
 # @Contact: sbia-software@uphs.upenn.edu
 ##########################################################################
 """
-from optimization_utils import *
-
+from chimera.optimization_utils import *
+from chimera.optimization_utils import transform,transform2,transform3
 def solve_sigsq(y,yd,ys,tx,xd,xs,P,params,config):
     D,N = y.shape
     d  = 0
@@ -117,7 +117,7 @@ def prepare_T(y,x,P,params):
 
 def solve_delta(y,x,P,params):
     K,M = params['delta'].shape
-    tx = transform(x,params)
+    tx = transform(x, params)
     delta = np.copy(params['delta'])
     
     P2 = np.sum(P,axis=0)

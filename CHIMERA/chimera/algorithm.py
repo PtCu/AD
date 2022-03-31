@@ -1,6 +1,6 @@
 import sys, csv, os
 import pickle
-from optimization_utils import *
+from chimera.optimization_utils import *
 from sklearn.metrics import adjusted_rand_score as ARI
 import pandas as pd
 
