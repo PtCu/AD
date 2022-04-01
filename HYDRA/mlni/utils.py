@@ -286,6 +286,24 @@ def consensus_clustering(clustering_results, k):
 
     return final_predict
 
+def cluster_stability(result, true_lable,k):
+    """
+    To compute the adjusted rand index across different pair of 2 folds cross CV
+    Args:
+        result: results containing all clustering assignment across all repetitions for CV
+        k: number of clusters
+    Returns:
+
+    """
+    num_pair = 0
+    aris = []
+    if k == 1:
+        adjusted_rand_index = 0  ## note, here, we manually set it to be 0, because it does not make sense when k==1.
+    else:
+        adjusted_rand_index = adjusted_rand_score(result, true_lable)
+
+    return adjusted_rand_index
+
 def cv_cluster_stability(result, k):
     """
     To compute the adjusted rand index across different pair of 2 folds cross CV
@@ -303,7 +321,9 @@ def cv_cluster_stability(result, k):
         for i in range(result.shape[1] - 1):
             for j in range(i+1, result.shape[1]):
                 num_pair += 1
+                # 取result[:]的第i列，结果为[false,true,...]这样的列表
                 non_zero_index = np.all(result[:, [i, j]], axis=1)
+                #取非test的结果，将他们进行比较
                 pair_result = result[:, [i, j]][non_zero_index]
                 ari = adjusted_rand_score(pair_result[:, 0], pair_result[:, 1])
                 aris.append(ari)

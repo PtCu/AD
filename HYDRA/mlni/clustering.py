@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import pandas as pd
-from mlni.utils import consensus_clustering, cv_cluster_stability, hydra_solver_svm, time_bar
+from mlni.utils import consensus_clustering, cv_cluster_stability, hydra_solver_svm, time_bar,cluster_stability
 from mlni.base import WorkFlow
 
 __author__ = "Junhao Wen"
@@ -18,7 +18,7 @@ class RB_DualSVM_Subtype(WorkFlow):
     The main class to run MLNI with repeated holdout CV for clustering.
     """
 
-    def __init__(self, input, feature_tsv, split_index, cv_repetition, k_min, k_max, output_dir, balanced=True,
+    def __init__(self, input, feature_tsv, split_index, cv_repetition, true_label,k_min, k_max, output_dir, balanced=True,
                  n_iterations=100, test_size=0.2, num_consensus=20, num_iteration=50, tol=1e-6, predefined_c=None,
                  weight_initialization_type='DPP', n_threads=8, save_models=False, verbose=True):
 
@@ -41,6 +41,60 @@ class RB_DualSVM_Subtype(WorkFlow):
         self._n_threads = n_threads
         self._save_models = save_models
         self._verbose = verbose
+        self._true_label=true_label
+
+    def run_one_round(self):
+        x = self._input.get_x()
+        y = self._input.get_y_raw()
+        data_label_folds_ks = np.zeros(
+            (y.shape[0], self._k_max - self._k_min + 1)).astype(int)
+
+        for j in self._k_range_list:
+              
+                training_final_prediction = hydra_solver_svm(1, x, y, j, self._output_dir,
+                                                             self._num_consensus, self._num_iteration, self._tol, self._balanced, self._predefined_c,
+                                                             self._weight_initialization_type, self._n_threads, self._save_models, self._verbose)
+
+                data_label_folds_ks[:, j - self._k_min] = training_final_prediction
+
+        print('Estimating clustering stability...\n')
+        ## for the adjusted rand index, only consider the PT results
+        adjusted_rand_index_results = np.zeros(self._k_max - self._k_min + 1)
+        index_pt = np.where(y != -1)[0]  # index for PTs
+        for m in range(self._k_max - self._k_min + 1):
+            #此时的result保存了多轮训练的结果. result[i]为第i轮训练的结果
+            result = data_label_folds_ks[:,m][index_pt]
+            adjusted_rand_index_result = cluster_stability(
+                result, self._true_label,self._k_range_list[m])
+            # saving each k result into the final adjusted_rand_index_results
+            adjusted_rand_index_results[m] = adjusted_rand_index_result
+
+        # print('Computing the final consensus group membership...\n')
+        # final_assignment_ks = - \
+        #     np.ones(
+        #         (self._input.get_y_raw().shape[0], self._k_max - self._k_min + 1)).astype(int)
+        # for n in range(self._k_max - self._k_min + 1):
+        #     result = data_label_folds_ks[:,n][index_pt]
+        #     final_assignment_ks_pt = consensus_clustering(
+        #         result, n + self._k_min)
+        #     final_assignment_ks[index_pt, n] = final_assignment_ks_pt + 1
+        #样本被分为-1（NC)以及0（亚型1）和1（亚型2）
+        print('Saving the final results...\n')
+        # save_cluster_results(adjusted_rand_index_results, final_assignment_ks)
+        columns = ['ari_' + str(i) + '_subtypes' for i in self._k_range_list]
+        ari_df = pd.DataFrame(
+            adjusted_rand_index_results[:, np.newaxis].transpose(), columns=columns)
+        ari_df.to_csv(os.path.join(self._output_dir, 'adjusted_rand_index.tsv'), index=False, sep='\t',
+                      encoding='utf-8', mode='a')
+
+        # save the final assignment for consensus clustering across different folds
+        # df_feature = pd.read_csv(self._feature_tsv, sep='\t')
+        # columns = ['assignment_' + str(i) for i in self._k_range_list]
+        # participant_df = df_feature.iloc[:, :3]
+        # cluster_df = pd.DataFrame(final_assignment_ks, columns=columns)
+        # all_df = pd.concat([participant_df, cluster_df], axis=1)
+        # all_df.to_csv(os.path.join(self._output_dir, 'clustering_assignment.tsv'), index=False,
+        #               sep='\t', encoding='utf-8')
 
     def run(self):
         x = self._input.get_x()
@@ -68,6 +122,7 @@ class RB_DualSVM_Subtype(WorkFlow):
         adjusted_rand_index_results = np.zeros(self._k_max - self._k_min + 1)
         index_pt = np.where(y == 1)[0]  # index for PTs
         for m in range(self._k_max - self._k_min + 1):
+            #此时的result保存了多轮训练的结果. result[i]为第i轮训练的结果
             result = data_label_folds_ks[:, :, m][index_pt]
             adjusted_rand_index_result = cv_cluster_stability(result, self._k_range_list[m])
             # saving each k result into the final adjusted_rand_index_results
@@ -79,7 +134,7 @@ class RB_DualSVM_Subtype(WorkFlow):
             result = data_label_folds_ks[:, :, n][index_pt]
             final_assignment_ks_pt = consensus_clustering(result, n + self._k_min)
             final_assignment_ks[index_pt, n] = final_assignment_ks_pt + 1
-
+        #样本被分为-1（NC)以及0（亚型1）和1（亚型2）
         print('Saving the final results...\n')
         # save_cluster_results(adjusted_rand_index_results, final_assignment_ks)
         columns = ['ari_' + str(i) + '_subtypes' for i in self._k_range_list]
@@ -95,3 +150,5 @@ class RB_DualSVM_Subtype(WorkFlow):
         all_df = pd.concat([participant_df, cluster_df], axis=1)
         all_df.to_csv(os.path.join(self._output_dir, 'clustering_assignment.tsv'), index=False,
                       sep='\t', encoding='utf-8')
+
+        

@@ -12,7 +12,50 @@ __maintainer__ = "Junhao Wen"
 __email__ = "junhao.wen89@gmail.com"
 __status__ = "Development"
 
-def clustering(feature_tsv, output_dir, k_min, k_max, cv_repetition, covariate_tsv=None, cv_strategy='hold_out', save_models=False,
+
+def clustering_one_round(feature_tsv, output_dir, k_min, k_max, true_label,cv_repetition=1, covariate_tsv=None, cv_strategy='hold_out', save_models=False,
+                         cluster_predefined_c=0.25, class_weight_balanced=True, weight_initialization_type='DPP', num_iteration=50,
+                         num_consensus=20, tol=1e-8, n_threads=8, verbose=False):
+    print('MLNI for semi-supervised clustering...')
+    if covariate_tsv == None:
+        input_data = RB_Input(feature_tsv, covariate_tsv=None)
+    else:
+        input_data = RB_Input(feature_tsv, covariate_tsv=covariate_tsv)
+
+    ## data split
+    print('Data split was performed based on validation strategy: %s...\n' % cv_strategy)
+    if cv_strategy == "hold_out":
+        ## check if data split has been done, if yes, the pickle file is there
+        if os.path.isfile(os.path.join(output_dir, 'data_split_stratified_' + str(cv_repetition) + '-holdout.pkl')):
+            split_index = pickle.load(open(os.path.join(
+                output_dir, 'data_split_stratified_' + str(cv_repetition) + '-holdout.pkl'), 'rb'))
+        else:
+            split_index, _ = make_cv_partition(
+                input_data.get_y(), cv_strategy, output_dir, cv_repetition)
+    elif cv_strategy == "k_fold":
+        ## check if data split has been done, if yes, the pickle file is there
+        if os.path.isfile(os.path.join(output_dir, 'data_split_stratified_' + str(cv_repetition) + '-fold.pkl')):
+            split_index = pickle.load(open(os.path.join(
+                output_dir, 'data_split_stratified_' + str(cv_repetition) + '-fold.pkl'), 'rb'))
+        else:
+            split_index, _ = make_cv_partition(
+                input_data.get_y(), cv_strategy, output_dir, cv_repetition)
+
+    print('Data split has been done!\n')
+
+    print('Starts semi-supervised clustering...')
+    ## Here, semi-supervised clustering
+    wf_clustering = RB_DualSVM_Subtype(input_data, feature_tsv, split_index, 1, true_label, k_min, k_max,
+                                       os.path.join(output_dir, 'clustering'), balanced=class_weight_balanced,
+                                       num_consensus=num_consensus, num_iteration=num_iteration,
+                                       tol=tol, predefined_c=cluster_predefined_c,
+                                       weight_initialization_type=weight_initialization_type,
+                                       n_threads=n_threads, save_models=save_models, verbose=verbose)
+
+    wf_clustering.run_one_round()
+    print('Finish...')
+
+def clustering(feature_tsv, output_dir, k_min, k_max, cv_repetition, true_label,covariate_tsv=None, cv_strategy='hold_out', save_models=False,
             cluster_predefined_c=0.25, class_weight_balanced=True, weight_initialization_type='DPP', num_iteration=50,
             num_consensus=20, tol=1e-8, n_threads=8, verbose=False):
     """
@@ -72,7 +115,7 @@ def clustering(feature_tsv, output_dir, k_min, k_max, cv_repetition, covariate_t
 
     print('Starts semi-supervised clustering...')
     ## Here, semi-supervised clustering
-    wf_clustering = RB_DualSVM_Subtype(input_data, feature_tsv, split_index, cv_repetition, k_min, k_max,
+    wf_clustering = RB_DualSVM_Subtype(input_data, feature_tsv, split_index, cv_repetition, true_label,k_min, k_max,
                                                        os.path.join(output_dir, 'clustering'), balanced=class_weight_balanced,
                                                        num_consensus=num_consensus, num_iteration=num_iteration,
                                                        tol=tol, predefined_c=cluster_predefined_c,
