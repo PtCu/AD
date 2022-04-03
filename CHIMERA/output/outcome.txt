@@ -2,4 +2,10 @@ Config:
 {'K': 2, 'verbose': True, 'lambda1': 10.0, 'lambda2': 100.0, 'r': 0.10000000000000005, 'rs': 10, 'eps': 0.001, 'max_iter': 1000, 'numRun': 3, 'modelFile': True, 'transform': 'affine', 'norm': 'zscore', 'mode': 'reproducibility', 'quiet': True}
 ARI: 0.39319755651458765Config:
 {'K': 2, 'verbose': True, 'lambda1': 10.0, 'lambda2': 100.0, 'r': 0.10000000000000005, 'rs': 10, 'eps': 0.001, 'max_iter': 1000, 'numRun': 3, 'modelFile': True, 'transform': 'affine', 'norm': 'zscore', 'mode': 'reproducibility', 'quiet': True}
-ARI1: 0.4778720447783619
+ARI1: 0.4778720447783619Config:
+{'K': 2, 'verbose': True, 'lambda1': 10.0, 'lambda2': 100.0, 'r': 0.10000000000000005, 'rs': 10, 'eps': 0.001, 'max_iter': 1000, 'numRun': 3, 'modelFile': True, 'transform': 'affine', 'norm': 'zscore', 'mode': 'reproducibility', 'quiet': True}
+affine ARI: 0.38814992602089304Config:
+{'K': 2, 'verbose': True, 'lambda1': 10.0, 'lambda2': 100.0, 'r': 0.10000000000000005, 'rs': 10, 'eps': 0.001, 'max_iter': 1000, 'numRun': 3, 'modelFile': True, 'transform': 'affine', 'norm': 'zscore', 'mode': 'reproducibility', 'quiet': True}
+duo ARI: 0.4613786962912667Config:
+{'K': 2, 'verbose': True, 'lambda1': 10.0, 'lambda2': 100.0, 'r': 0.10000000000000005, 'rs': 10, 'eps': 0.001, 'max_iter': 1000, 'numRun': 3, 'modelFile': True, 'transform': 'affine', 'norm': 'zscore', 'mode': 'reproducibility', 'quiet': True}
+trans ARI: 0.3305456851780895

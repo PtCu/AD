@@ -5,11 +5,11 @@ import sys
 import csv
 import numpy
 from sklearn.metrics import adjusted_rand_score as ARI
-import pandas as pd
-import numpy as np
-import math
+from sklearn.metrics import silhouette_score
+from matplotlib import pyplot as plt
 import numpy as np
 from sklearn import cluster
+
 
 cwd_path = os.getcwd()
 
@@ -18,6 +18,8 @@ output_file_with_cov = cwd_path+"/hierachical/output/output_with_cov.tsv"
 output_file_without_cov = cwd_path+"/hierachical/output/output_without_cov.tsv"
 
 simulated_data = cwd_path+"/hierachical/data/simulated_data.tsv"
+
+output_dir = cwd_path + "/hierachical/output/"
 
 outcome_file = cwd_path+"/hierachical/output/oucome.txt"
 
@@ -83,39 +85,60 @@ def get_data(filename):
 
     feat_all = np.hstack((feat_cov, feat_img))
 
-    feat_img = np.transpose(feat_img)
+    x_img = feat_img[group == 1, :]  # patients
 
-    x_img = feat_img[:, group == 1]  # patients
-    x_img = np.transpose(x_img)
+    x_all = feat_all[group == 1, :]  # patients
 
-    feat_all = np.transpose(feat_all)
-    x_all = feat_all[:, group == 1]  # patients
-    x_all = np.transpose(x_all)
-
-    return x_img, x_all, ID
+    return x_img, x_all, feat_img, feat_all, ID
 
 
-def clustering(X):
-    sk = cluster.AgglomerativeClustering(K)
-
+def clustering(X, k):
+    sk = cluster.AgglomerativeClustering(k)
     sk.fit(X)
     label = sk.labels_
     return label
 
 
+def eval_K(X, k_min, k_max):
+    x = np.arange(k_min, k_max+1, dtype=int)
+    y = []
+    for k in range(k_min, k_max+1):
+        label = clustering(X, k)
+        silhouette_avg = silhouette_score(X, label)
+        y.append(silhouette_avg)
+    plt.title("silhouette score")
+    # fontproperties 设置中文显示，fontsize 设置字体大小
+    plt.xlabel("Silhoutte score")
+    plt.ylabel("K range")
+    plt.plot(x, y)
+    # plt.show()
+    plt.savefig(output_dir+'outcome.png')
+
+
+def eval_K(X, k_min, k_max, filename="outcome.png"):
+    x = np.arange(k_min, k_max+1, dtype=int)
+    y = []
+    for k in range(k_min, k_max+1):
+        label = clustering(X, k)
+        silhouette_avg = silhouette_score(X, label)
+        y.append(silhouette_avg)
+    plt.title("silhouette score")
+    plt.xlabel("Silhoutte score")
+    plt.ylabel("K range")
+    plt.plot(x, y)
+    # plt.show()
+    plt.savefig(output_dir+filename)
+    plt.clf()
+
+
 if __name__ == "__main__":
 
-    x_img, x_all, ID = get_data(simulated_data)
+    x_img, x_all, ID, feat_img, feat_all = get_data(simulated_data)
 
-    sk = cluster.AgglomerativeClustering(K)
-
+    eval_K(feat_img, 2, 8)
     true_label = numpy.append(numpy.zeros(250), numpy.ones(250))
-    # With covariate
-    label_with_cov = clustering(x_all)
-    write_outputfile(output_file_with_cov, ID, label_with_cov,
-                     true_label, outcome_file, "Hierachical with covariate")
 
-    # Without covariate
-    label_without_cov = clustering(x_img)
-    write_outputfile(output_file_without_cov, ID, label_without_cov,
-                     true_label, outcome_file, "Hierachical without covariate")
+    # # Without covariate
+    # label_without_cov = clustering(x_img)
+    # write_outputfile(output_file_without_cov, ID, label_without_cov,
+    #                  true_label, outcome_file, "Hierachical without covariate")

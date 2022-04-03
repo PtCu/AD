@@ -11,6 +11,10 @@ from sklearn.decomposition import NMF
 import numpy as np
 from scipy.spatial.distance import pdist
 from typing import Counter
+from sklearn.metrics import silhouette_score
+from matplotlib import pyplot as plt
+
+
 cwd_path = os.getcwd()
 
 output_file_with_cov = cwd_path+"/NMF/output/output_with_cov.tsv"
@@ -21,8 +25,10 @@ simulated_data = cwd_path+"/NMF/data/simulated_data.tsv"
 
 outcome_file = cwd_path+"/NMF/output/oucome.txt"
 
-K = 2
+output_dir = cwd_path + "/NMF/output/"
 
+K = 2
+TOTAL_NUMS = 1000
 PT_NUMS = 500
 ROI_NUMS = 20
 
@@ -86,16 +92,11 @@ def get_data(filename):
 
     feat_all = np.hstack((feat_cov, feat_img))
 
-    feat_img = np.transpose(feat_img)
+    x_img = feat_img[group == 1, :]  # patients
 
-    x_img = feat_img[:, group == 1]  # patients
-    x_img = np.transpose(x_img)
+    x_all = feat_all[group == 1, :]  # patients
 
-    feat_all = np.transpose(feat_all)
-    x_all = feat_all[:, group == 1]  # patients
-    x_all = np.transpose(x_all)
-
-    return x_img, x_all, ID
+    return x_img, x_all, feat_img, feat_all, ID
 
 
 def jaccard_distance(x, y):
@@ -119,18 +120,21 @@ def get_subtype(ROIS, subtypes, k):
     return ans
 
 
-def clustering1(X, k):
+def clustering1(X, k, transposed=False):
     model = NMF(n_components=k)
-    A = model.fit_transform(X)  
-
-    label = np.zeros(PT_NUMS, dtype=int)
-
-    for i in range(len(A)):
+    W = model.fit_transform(X)
+    H = model.components_
+    label = np.zeros(len(X), dtype=int)
+    if(transposed):
+        judge = np.transpose(H)
+    else:
+        judge = W
+    for i in range(len(judge)):
         subtype = 0
         max_prob = 0
         for j in range(k):
-            if(A[i][j] > max_prob):
-                max_prob = A[i][j]
+            if(judge[i][j] > max_prob):
+                max_prob = judge[i][j]
                 subtype = j
         label[i] = subtype
     return label
@@ -151,29 +155,62 @@ def clustering2(X, k, x_img_flatten):
             f.write('Type {}: {}'.format(i, topic_words))
             subtypes[i] = topic_words
 
-    out_label = np.zeros(PT_NUMS)
-    for i in range(PT_NUMS):
+    out_label = np.zeros(TOTAL_NUMS)
+    for i in range(TOTAL_NUMS):
         ROIS = x_img[i]
         out_label[i] = get_subtype(ROIS, subtypes, K)
     return out_label
 
 
+def eval_K(X, k_min, k_max, filename):
+    x = np.arange(k_min, k_max+1, dtype=int)
+    y = []
+    for k in range(k_min, k_max+1):
+        label = clustering1(X, k)
+        silhouette_avg = silhouette_score(X, label)
+        y.append(silhouette_avg)
+    plt.title("silhouette score")
+    plt.xlabel("Silhoutte score")
+    plt.ylabel("K range")
+    plt.plot(x, y)
+    # plt.show()
+    plt.savefig(output_dir+filename)
+    plt.clf()
+
+
+def test(source, k_min, k_max, name):
+    source_flatten = source.flatten()
+    count_data = Counter(source_flatten)
+    X = np.zeros([len(source), len(count_data)], dtype=int)
+    for i in range(len(source)):
+        for j in range(len(source[0])):
+            X[i][j] = count_data[source[i][j]]
+
+    eval_K(X, k_min, k_max, name)
+
+
 if __name__ == "__main__":
 
-    x_img, x_all, ID = get_data(simulated_data)
+    x_img, x_all, feat_img, feat_all, ID = get_data(simulated_data)
 
-    x_img_flatten = x_img.flatten()
-    count_data = Counter(x_img_flatten)
-    X = np.zeros([PT_NUMS, ROI_NUMS], dtype=int)
+    test(feat_img, 2, 100, "PT_NC.png")
+    test(x_img, 2, 100, "only_PT.png")
 
-    for i in range(PT_NUMS):
-        for j in range(ROI_NUMS):
-            X[i][j] = count_data[x_img[i][j]]
+    # feat_img_flatten = feat_img.flatten()
+    # count_data = Counter(feat_img_flatten)
+    # X = np.zeros([ROI_NUMS, TOTAL_NUMS], dtype=int)
 
-    label = clustering1(X, K)
+    # for i in range(ROI_NUMS):
+    #     for j in range(TOTAL_NUMS):
+    #         X[i][j] = count_data[feat_img[i][j]]
 
-    true_label = numpy.append(numpy.zeros(250), numpy.ones(250))
+    # X_t = np.transpose(X)
 
-    # Without covariate
-    write_outputfile(output_file_without_cov, ID, label,
-                     true_label, outcome_file, "Hierachical without covariate")
+    # label1 = clustering1(X_t, K, True)
+    # label2 = clustering1(X, K, False)
+    # print(label1+label2)
+    # true_label = numpy.append(numpy.zeros(250), numpy.ones(250))
+
+    # # Without covariate
+    # write_outputfile(output_file_without_cov, ID, label,
+    #                  true_label, outcome_file, "Hierachical without covariate")

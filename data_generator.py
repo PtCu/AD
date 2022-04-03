@@ -17,7 +17,6 @@ PT_TYPE=1
 
 DATA_SET=0
 
-
 cwd_path = os.getcwd()
 
 data_dir=cwd_path+"/data/"

@@ -15,5 +15,6 @@ k_min = 2
 k_max = 2
 cv_repetition = 200
 true_label = np.append(np.zeros(250), np.ones(250))
+
 clustering(feature_tsv, output_dir, k_min, k_max,
            cv_repetition, true_label, covariate_tsv=covariate_tsv)

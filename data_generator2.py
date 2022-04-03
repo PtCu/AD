@@ -5,22 +5,6 @@ from pip import main
 from pandas import DataFrame, Series
 
 import pandas as pd
-# # 三个字段 name, site, age
-# nme = ["Google", "Runoob", "Taobao", "Wiki"]
-# st = ["www.google.com", "www.runoob.com", "www.taobao.com", "www.wikipedia.org"]
-# ag = [90, 40, 80, 98]
-
-# # 字典https://www.jb51.net/article/185302.htm
-# dict = {'name': nme, 'site': st, 'age': ag}
-
-# title=["ID","GROUP", "COVAR", "COVAR"]
-# for i in range(0,20):
-#         title.append("ROI")
-
-# df = pd.DataFrame(dict,title)
-
-# # 保存 dataframe
-# df.to_csv('site.csv')
 
 TOTAL_NUM = 500
 

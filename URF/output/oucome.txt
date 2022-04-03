@@ -1,24 +1,8 @@
-Hierachical with covariate :
-ARI: -0.0016071967355117515
-Hierachical without covariate :
-ARI: -0.0007093975675695561
-Hierachical with covariate :
-ARI: -0.0016071967355117515
-Hierachical without covariate :
-ARI: -0.0009808181426681723
-Hierachical with covariate :
-ARI: -0.0019439036144578313
-Hierachical without covariate :
-ARI: -0.0007039961774986667
-Hierachical with covariate :
-ARI: 0.01876960642570281
-Hierachical without covariate :
+N= 5 without covariate :
+ARI: -0.001426242397464892
+N= 50 without covariate :
 ARI: -0.001982696449822522
-Hierachical with covariate :
-ARI: 0.003793681188324368
-Hierachical without covariate :
+N= 500 without covariate :
+ARI: 0.011475019711645953
+N= 5000 without covariate :
 ARI: -0.0019881047209422895
-Hierachical with covariate :
-ARI: 0.0019393871499349827
-Hierachical without covariate :
-ARI: -0.0016033351324160315

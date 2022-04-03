@@ -8,8 +8,8 @@ import csv
 from sklearn.metrics import adjusted_rand_score as ARI
 import numpy as np
 import forest_cluster as rfc
-
-
+from sklearn.metrics import silhouette_score
+from matplotlib import pyplot as plt
 
 cwd_path = os.getcwd()
 
@@ -20,6 +20,8 @@ output_file_without_cov = cwd_path+"/URF/output/output_without_cov.tsv"
 simulated_data = cwd_path+"/URF/data/simulated_data.tsv"
 
 outcome_file = cwd_path+"/URF/output/oucome.txt"
+
+output_dir = cwd_path + "/URF/output/"
 
 K = 2
 
@@ -83,19 +85,14 @@ def get_data(filename):
 
     feat_all = np.hstack((feat_cov, feat_img))
 
-    feat_img = np.transpose(feat_img)
+    x_img = feat_img[group == 1, :]
 
-    x_img = feat_img[:, group == 1]  # patients
-    x_img = np.transpose(x_img)
+    x_all = feat_all[group == 1, :]
 
-    feat_all = np.transpose(feat_all)
-    x_all = feat_all[:, group == 1]  # patients
-    x_all = np.transpose(x_all)
-
-    return x_img, x_all, ID
+    return x_img, x_all, feat_img, feat_all, ID
 
 
-def clustering(X):
+def clustering(X, k, step=50):
     """
     Random Forest clustering works as follows
     1. Construct a dissimilarity measure using RF
@@ -103,31 +100,47 @@ def clustering(X):
     3. Cluster using K-means or K-medoids
     """
     rf = rfc.RandomForestEmbedding(
-        n_estimators=5000, random_state=10, n_jobs=-1, sparse_output=False)
+        n_estimators=step, random_state=10, n_jobs=-1, sparse_output=False)
+    # 其中，leaves[i][j]表示数据i经过n_estimator个决策树后，
+    # 决策树j最终的做出的决策。每个决策树最终做出的决策为该决策树的叶节点编号。
     leaves = rf.fit_transform(X)
     projector = manifold.TSNE(
         n_components=2, random_state=1234, metric='hamming')
     embedding = projector.fit_transform(leaves)
-    clusterer = cluster.KMeans(n_clusters=K, random_state=1234, n_init=20)
+    clusterer = cluster.KMeans(n_clusters=k, random_state=1234, n_init=20)
     clusterer.fit(embedding)
     label = clusterer.labels_
     return label
 
 
+def eval_K(X, k_min, k_max, filename):
+    x = np.arange(k_min, k_max+1, dtype=int)
+    y = []
+    for k in range(k_min, k_max+1):
+        label = clustering(X, k)
+        silhouette_avg = silhouette_score(X, label)
+        y.append(silhouette_avg)
+    plt.title("silhouette score")
+    plt.xlabel("Silhoutte score")
+    plt.ylabel("K range")
+    plt.plot(x, y)
+    # plt.show()
+    plt.savefig(output_dir+filename)
+    plt.clf()
+
+
 if __name__ == "__main__":
 
-    x_img, x_all, ID = get_data(simulated_data)
+    x_img, x_all, feat_img, feat_all, ID = get_data(simulated_data)
 
-    label1 = clustering(x_all)
-    label2 = clustering(x_img)
+    eval_K(feat_img, 2, 10, "PT_NC.png")
+    eval_K(x_img, 2, 10, "only_PT.png")
 
-    true_label = np.append(np.zeros(250), np.ones(250))
-    # With covariate
+    # step = 500
 
-    write_outputfile(output_file_with_cov, ID, label1,
-                     true_label, outcome_file, "Hierachical with covariate")
+    # label2 = clustering(x_img, step)
 
-    # Without covariate
+    # true_label = np.append(np.zeros(250), np.ones(250))
 
-    write_outputfile(output_file_without_cov, ID, label2,
-                     true_label, outcome_file, "Hierachical without covariate")
+    # write_outputfile(output_file_without_cov, ID, label2,
+    #                  true_label, outcome_file, "N= "+str(step)+" without covariate")

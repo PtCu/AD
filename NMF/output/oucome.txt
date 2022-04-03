@@ -1,22 +1,18 @@
-Hierachical with covariate :
-ARI: 0.0
 Hierachical without covariate :
-ARI: -3.18091359493932e-05
-Hierachical with covariate :
-ARI: 0.00032066673026556817
+ARI: 0.00041620888828922597
 Hierachical without covariate :
 ARI: 0.0
 Hierachical without covariate :
-ARI: -6.336374590047627e-05
+ARI: 0.0
 Hierachical without covariate :
-ARI: -6.336374590047627e-05
+ARI: 0.0
 Hierachical without covariate :
-ARI: -6.336374590047627e-05
+ARI: 0.0
 Hierachical without covariate :
-ARI: -6.336374590047627e-05
+ARI: -0.0015823364134316042
 Hierachical without covariate :
-ARI: -6.336374590047627e-05
+ARI: 0.00041620888828922597
 Hierachical without covariate :
-ARI: -6.336374590047627e-05
+ARI: 0.0016962206885917112
 Hierachical without covariate :
 ARI: 0.00041620888828922597
