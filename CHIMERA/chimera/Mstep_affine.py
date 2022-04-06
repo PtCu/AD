@@ -10,8 +10,10 @@
 # @Contact: sbia-software@uphs.upenn.edu
 ##########################################################################
 """
-from chimera.optimization_utils import *
-from chimera.optimization_utils import transform,transform2,transform3
+from CHIMERA.chimera.optimization_utils import *
+from CHIMERA.chimera.optimization_utils import transform, transform2, transform3
+# from chimera.optimization_utils import *
+# from chimera.optimization_utils import transform, transform2, transform3
 def solve_sigsq(y,yd,ys,tx,xd,xs,P,params,config):
     D,N = y.shape
     d  = 0

@@ -1,3 +1,4 @@
+
 from pdb import main
 
 import os
@@ -9,9 +10,15 @@ from sklearn.metrics import silhouette_score
 from matplotlib import pyplot as plt
 import numpy as np
 from sklearn import cluster
+import sys
+print(sys.path)
+sys.path.append(os.getcwd())
 
+import utilities.utils as utl
 
 cwd_path = os.getcwd()
+
+cur_dirname="hierachical"
 
 output_file_with_cov = cwd_path+"/hierachical/output/output_with_cov.tsv"
 
@@ -85,9 +92,9 @@ def get_data(filename):
 
     feat_all = np.hstack((feat_cov, feat_img))
 
-    x_img = feat_img[group == 1, :]  # patients
+    x_img = feat_img[group == 1, :]  
 
-    x_all = feat_all[group == 1, :]  # patients
+    x_all = feat_all[group == 1, :]  
 
     return x_img, x_all, feat_img, feat_all, ID
 
@@ -122,9 +129,9 @@ def eval_K(X, k_min, k_max, filename="outcome.png"):
         label = clustering(X, k)
         silhouette_avg = silhouette_score(X, label)
         y.append(silhouette_avg)
-    plt.title("silhouette score")
-    plt.xlabel("Silhoutte score")
-    plt.ylabel("K range")
+    plt.title("Hierachical")
+    plt.xlabel("K range")
+    plt.ylabel("Silhoutte score")
     plt.plot(x, y)
     # plt.show()
     plt.savefig(output_dir+filename)
@@ -133,12 +140,9 @@ def eval_K(X, k_min, k_max, filename="outcome.png"):
 
 if __name__ == "__main__":
 
-    x_img, x_all, ID, feat_img, feat_all = get_data(simulated_data)
-
-    eval_K(feat_img, 2, 8)
+    
     true_label = numpy.append(numpy.zeros(250), numpy.ones(250))
 
-    # # Without covariate
-    # label_without_cov = clustering(x_img)
-    # write_outputfile(output_file_without_cov, ID, label_without_cov,
-    #                  true_label, outcome_file, "Hierachical without covariate")
+    x_img, x_all, ID, feat_img, feat_all = utl.get_data(simulated_data)
+
+    eval_K(feat_img, 2, 8)

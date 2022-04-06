@@ -1,6 +1,7 @@
 import sys, csv, os
 import pickle
-from chimera.optimization_utils import *
+from CHIMERA.chimera.optimization_utils import *
+# from chimera.optimization_utils import *
 from sklearn.metrics import adjusted_rand_score as ARI
 import pandas as pd
 
@@ -13,42 +14,114 @@ __maintainer__ = "Junhao Wen"
 __email__ = "junhao.wen89@gmail.com"
 __status__ = "Maintaining"
 
-def clustering_main(dataFile, output_dir, config):
+
+def clustering_core(feat_cov, feat_img, ID, group, config, feat_set=None):
+    if feat_set is None:
+        config['rs'] = 0
+    else:
+        unique_ID = np.unique(feat_set) #去重
+        datasetID = np.copy(feat_set)
+        feat_set = np.zeros((len(datasetID), len(unique_ID)))
+        for i in range(len(unique_ID)):
+            feat_set[np.nonzero(datasetID == unique_ID[i])[0], i] = 1 ## one-hot
+    
+    if feat_cov is None:
+        config['r'] = 0
+    else:
+        ## update the covariate distance
+        if config['r'] == -1.0:
+            config['r'] = np.sum(np.var(feat_cov, axis=0))/np.sum(np.var(feat_img, axis=0))
+
+    feat_img = np.transpose(feat_img)
+    x = feat_img[:, group == 0]  # normal controls
+    y = feat_img[:, group != 0]  # patients
+    xd = []
+    yd = []
+    xs = []
+    ys = []
+    if feat_cov is not None:
+        feat_cov = np.transpose(feat_cov)
+        xd = feat_cov[:, group == 0]
+        yd = feat_cov[:, group != 0]
+
+    if config['mode'] == 'energy_min':  # save result yields minimal energy
+        obj = np.float('inf')
+        for i in range(config['numRun']):
+            # optimize the ojectives
+            cur_result = optimize(x, xd, xs, y, yd, ys, config)
+            cur_obj = cur_result[2].min()
+            if config['verbose']:
+                sys.stdout.write('\t\tRun id %d, obj = %f\n' % (i, cur_obj))
+            else:
+                time_bar(i, config['numRun'])
+            if cur_obj < obj:
+                result = cur_result
+                obj = cur_obj
+        sys.stdout.write('\n')
+        membership = np.dot(result[1], Tr(result[0]['delta']))
+        label = np.argmax(membership, axis=1)
+    elif config['mode'] == 'reproducibility':  # save result most reproducible
+        label_mat = []
+        results = []
+        for i in range(config['numRun']):
+            cur_result = optimize(x, xd, xs, y, yd, ys, config)
+            membership = np.dot(cur_result[1], Tr(cur_result[0]['delta']))
+            label = np.argmax(membership, axis=1)
+            label_mat.append(label)
+            results.append(cur_result)
+            time_bar(i, config['numRun'])
+        sys.stdout.write('\n')
+        label_mat = np.asarray(label_mat)
+        ari_mat = np.zeros((config['numRun'], config['numRun']))
+        for i in range(config['numRun']):
+            for j in range(i+1, config['numRun']):
+                ari_mat[i, j] = ARI(label_mat[i, :], label_mat[j, :])
+                ari_mat[j, i] = ari_mat[i, j]
+        ave_ari = np.sum(ari_mat, axis=0)/(config['numRun']-1)
+        idx = np.argmax(ave_ari)
+        if config['verbose']:
+            sys.stdout.write('\t\tBest average ARI is %f\n' % (max(ave_ari)))
+        label = label_mat[idx, :]
+        result = results[idx]
+    return label
+
+
+def clustering_main(feat_cov,feat_img,ID,group,config):
     """Core function of CHIMERA, performs:
         1) read and preprocess data
         2) clustering
         3) save results
     """
-    outFile = os.path.join(output_dir, 'output.tsv')
-    #================================= Reading Data ======================================================
-    sys.stdout.write('\treading data...\n')
-    feat_cov = None
-    feat_set = None
-    ID = None
-    with open(dataFile) as f:
-        data   = list(csv.reader(f,delimiter='\t'))
-        header = np.asarray(data[0])
-        if 'GROUP' not in header:
-            sys.stdout.write('Error: group information not found. Please check csv header line for field "Group".\n')
-            sys.exit(1)
-        if 'ROI' not in header:
-            sys.stdout.write('Error: image features not found. Please check csv header line for field "IMG".\n')
-            sys.exit(1)
-        data = np.asarray(data[1:])
+    # outFile = os.path.join(output_dir, 'output.tsv')
+    # #================================= Reading Data ======================================================
+    # sys.stdout.write('\treading data...\n')
+    # feat_cov = None
+    # feat_set = None
+    # ID = None
+    # with open(dataFile) as f:
+    #     data   = list(csv.reader(f,delimiter='\t'))
+    #     header = np.asarray(data[0])
+    #     if 'GROUP' not in header:
+    #         sys.stdout.write('Error: group information not found. Please check csv header line for field "Group".\n')
+    #         sys.exit(1)
+    #     if 'ROI' not in header:
+    #         sys.stdout.write('Error: image features not found. Please check csv header line for field "IMG".\n')
+    #         sys.exit(1)
+    #     data = np.asarray(data[1:])
         
-        group = (data[:,np.nonzero(header=='GROUP')[0]].flatten()).astype(int)
-        feat_img = (data[:,np.nonzero(header=='ROI')[0]]).astype(np.float)
-        if 'COVAR' in header:
-            feat_cov = (data[:,np.nonzero(header=='COVAR')[0]]).astype(np.float)
-        if 'ID' in header:
-            ID = data[:,np.nonzero(header=='ID')[0]]
-            ID = ID[group==1]
-        if 'SET' in header:
-            feat_set = data[:,np.nonzero(header=='SET')[0]].flatten()
+    #     group = (data[:,np.nonzero(header=='GROUP')[0]].flatten()).astype(int)
+    #     feat_img = (data[:,np.nonzero(header=='ROI')[0]]).astype(np.float)
+    #     if 'COVAR' in header:
+    #         feat_cov = (data[:,np.nonzero(header=='COVAR')[0]]).astype(np.float)
+    #     if 'ID' in header:
+    #         ID = data[:,np.nonzero(header=='ID')[0]]
+    #         ID = ID[group==1]
+    #     if 'SET' in header:
+    #         feat_set = data[:,np.nonzero(header=='SET')[0]].flatten()
 
-    #================================= Normalizing Data ======================================================
-    model, feat_img, feat_cov = data_normalization(feat_img, feat_cov, config)
-
+    # #================================= Normalizing Data ======================================================
+    # model, feat_img, feat_cov = data_normalization(feat_img, feat_cov, config)
+    feat_set=None
     #================================= Prepare Dataset ID ======================================================
     if feat_set is None:
         config['rs'] = 0
@@ -145,26 +218,26 @@ def clustering_main(dataFile, output_dir, config):
         result = results[idx]
 
     #================================ Finalizing and Save =====================================
-    sys.stdout.write('\tsaving results...\n')
-    with open(outFile,'w') as f:
-        if ID is None:
-            f.write('Cluster\n')
-            for i in range(len(label)):
-                f.write('%d\n' % (label[i]+1))
-        else:
-            f.write('ID,Cluster\n')
-            for i in range(len(label)):
-                f.write('%s,%d\n' % (ID[i][0], label[i]+1))
+    # sys.stdout.write('\tsaving results...\n')
+    # with open(outFile,'w') as f:
+    #     if ID is None:
+    #         f.write('Cluster\n')
+    #         for i in range(len(label)):
+    #             f.write('%d\n' % (label[i]+1))
+    #     else:
+    #         f.write('ID,Cluster\n')
+    #         for i in range(len(label)):
+    #             f.write('%s,%d\n' % (ID[i][0], label[i]+1))
+    return label,np.transpose(x)
 
-
-    if config['modelFile']:
-        output_model = os.path.join(output_dir, 'clustering_model.pkl')
-        trainData = {'x': x, 'xd': xd, 'xs': xs, 'datasetID': unique_ID}
-        model.update({'trainData': trainData})
-        model.update({'model': result})
-        model.update({'config': config})
-        with open(output_model, 'wb') as f:
-            pickle.dump(model, f, 2)
+    # if config['modelFile']:
+    #     output_model = os.path.join(output_dir, 'clustering_model.pkl')
+    #     trainData = {'x': x, 'xd': xd, 'xs': xs, 'datasetID': unique_ID}
+    #     model.update({'trainData': trainData})
+    #     model.update({'model': result})
+    #     model.update({'config': config})
+    #     with open(output_model, 'wb') as f:
+    #         pickle.dump(model, f, 2)
         
 #==============================================================================================
 # Optimization code

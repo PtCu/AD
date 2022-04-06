@@ -120,9 +120,9 @@ def eval_K(X, k_min, k_max, filename):
         label = clustering(X, k)
         silhouette_avg = silhouette_score(X, label)
         y.append(silhouette_avg)
-    plt.title("silhouette score")
-    plt.xlabel("Silhoutte score")
-    plt.ylabel("K range")
+    plt.title("URF")
+    plt.xlabel("K range")
+    plt.ylabel("Silhoutte score")
     plt.plot(x, y)
     # plt.show()
     plt.savefig(output_dir+filename)
@@ -134,7 +134,7 @@ if __name__ == "__main__":
     x_img, x_all, feat_img, feat_all, ID = get_data(simulated_data)
 
     eval_K(feat_img, 2, 10, "PT_NC.png")
-    eval_K(x_img, 2, 10, "only_PT.png")
+    # eval_K(x_img, 2, 10, "only_PT.png")
 
     # step = 500
 

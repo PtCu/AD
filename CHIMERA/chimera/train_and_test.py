@@ -1,4 +1,4 @@
-from .algorithm import *
+from CHIMERA.chimera.algorithm import *
 
 ##NOTE: this script has not been adapted! Don't use it directly!
 

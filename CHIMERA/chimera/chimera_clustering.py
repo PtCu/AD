@@ -1,5 +1,11 @@
-from chimera.algorithm import clustering_main
-
+from CHIMERA.chimera.algorithm import clustering_core
+from CHIMERA.chimera.algorithm import clustering_main
+# from chimera.algorithm import clustering_core
+# from chimera.algorithm import clustering_main
+import os
+import csv
+import sys
+import numpy as np
 __author__ = "Junhao Wen"
 __copyright__ = "Copyright 2019-2020 The CBICA & SBIA Lab"
 __credits__ = ["Junhao Wen, Aoyan Dong"]
@@ -9,9 +15,13 @@ __maintainer__ = "Junhao Wen"
 __email__ = "junhao.wen89@gmail.com"
 __status__ = "Maintaining"
 
-def clustering(feature_tsv, output_dir, k, weight_covariate=-1.0, weight_site=10, lambda_b=10.0,
-               lambda_A=100.0, transformation_type='affine', tol=0.001, max_iteration=1000, num_initialization_run=3,
-               save_model=True, standardization_method='zscore', saving_criterion='reproducibility', verbose=True):
+
+# def clustering(feat_cov, feat_img, ID, group, k, weight_covariate=-1.0, weight_site=10, lambda_b=10.0,
+#                lambda_A=100.0, transformation_type='affine', tol=0.001, max_iteration=1000, num_initialization_run=3,
+#                save_model=True, standardization_method='zscore', saving_criterion='energy_min', verbose=False):
+def clustering(k, X,weight_covariate=-1.0, weight_site=10, lambda_b=10.0,
+                lambda_A=100.0, transformation_type='affine', tol=0.001, max_iteration=1000, num_initialization_run=3,
+                save_model=True, standardization_method='zscore', saving_criterion='reproducibility', verbose=False):
     """
     Clustering heterogenous disease effects via distribution matching of imaging patterns.
     Ref: https://pubmed.ncbi.nlm.nih.gov/26452275/
@@ -49,9 +59,13 @@ def clustering(feature_tsv, output_dir, k, weight_covariate=-1.0, weight_site=10
     'eps': tol, 'max_iter': max_iteration, 'numRun': num_initialization_run, 'modelFile': save_model, 'transform': transformation_type,
     'norm': standardization_method, 'mode': saving_criterion, 'quiet': True}
 
+    feat_cov=X["pt_nc_cov"]
+    feat_img=X["pt_nc_img"]
+    ID=X["pt_ID"]
+    group=X["group"]
     ## go into the core function of chimera
-    clustering_main(feature_tsv, output_dir, config_arg)
+    return clustering_core(feat_cov, feat_img,ID, group, config_arg)
+    #return clustering_main(feat_cov,feat_img,ID,group,config_arg)
 
-    print('Finish...')
 
-    return config_arg
+    # return config_arg

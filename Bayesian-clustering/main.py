@@ -26,7 +26,6 @@ from bhc import (BayesianHierarchicalClustering,
                  BayesianRoseTrees,
                  NormalInverseWishart)
 
-K = 2
 cwd_path = os.getcwd()
 
 output_file = cwd_path + "/Bayesian-clustering/output/output.tsv"

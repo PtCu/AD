@@ -11,6 +11,7 @@ import numpy as np
 from scipy.spatial.distance import pdist
 from sklearn.metrics import silhouette_score
 from matplotlib import pyplot as plt
+from sklearn.naive_bayes import ComplementNB
 
 cwd_path = os.getcwd()
 
@@ -168,9 +169,9 @@ def eval_K(X, k_min, k_max, filename):
         label = clustering1(X, k)
         silhouette_avg = silhouette_score(X, label)
         y.append(silhouette_avg)
-    plt.title("silhouette score")
-    plt.xlabel("Silhoutte score")
-    plt.ylabel("K range")
+    plt.title("LDA")
+    plt.ylabel("Silhoutte score")
+    plt.xlabel("K range")
     plt.plot(x, y)
     # plt.show()
     plt.savefig(output_dir+filename)
@@ -192,8 +193,8 @@ if __name__ == "__main__":
 
     x_img, x_all, feat_img, feat_all, ID = get_data(simulated_data)
 
-    test(feat_img, 2, 40, "PT_NC.png")
-    test(x_img, 2, 40, "only_PT.png")
+    test(feat_img, 2, 30, "PT_NC.png")
+    # test(x_img, 2, 10, "only_PT.png")
     # out_label = clustering1(X, K)
 
     # true_label = numpy.append(numpy.zeros(250), numpy.ones(250))

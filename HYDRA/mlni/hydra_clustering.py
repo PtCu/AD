@@ -2,7 +2,7 @@ from mlni.clustering import RB_DualSVM_Subtype
 from mlni.base import RB_Input
 import os, pickle
 from mlni.utils import make_cv_partition
-
+from mlni.utils import consensus_clustering, cv_cluster_stability, hydra_solver_svm, time_bar, cluster_stability
 __author__ = "Junhao Wen"
 __copyright__ = "Copyright 2019-2020 The CBICA & SBIA Lab"
 __credits__ = ["Junhao Wen, Erdem Varol"]
@@ -13,7 +13,7 @@ __email__ = "junhao.wen89@gmail.com"
 __status__ = "Development"
 
 
-def clustering_one_round(feature_tsv, output_dir, k_min, k_max, true_label,cv_repetition=1, covariate_tsv=None, cv_strategy='hold_out', save_models=False,
+def clustering_one_round(feature_tsv, output_dir, k, cv_repetition=1, covariate_tsv=None, cv_strategy='hold_out', save_models=False,
                          cluster_predefined_c=0.25, class_weight_balanced=True, weight_initialization_type='DPP', num_iteration=50,
                          num_consensus=20, tol=1e-8, n_threads=8, verbose=False):
     print('MLNI for semi-supervised clustering...')
@@ -45,15 +45,20 @@ def clustering_one_round(feature_tsv, output_dir, k_min, k_max, true_label,cv_re
 
     print('Starts semi-supervised clustering...')
     ## Here, semi-supervised clustering
-    wf_clustering = RB_DualSVM_Subtype(input_data, feature_tsv, split_index, 1, true_label, k_min, k_max,
-                                       os.path.join(output_dir, 'clustering'), balanced=class_weight_balanced,
-                                       num_consensus=num_consensus, num_iteration=num_iteration,
-                                       tol=tol, predefined_c=cluster_predefined_c,
-                                       weight_initialization_type=weight_initialization_type,
-                                       n_threads=n_threads, save_models=save_models, verbose=verbose)
-
-    wf_clustering.run_one_round()
-    print('Finish...')
+    # wf_clustering = RB_DualSVM_Subtype(input_data, feature_tsv, split_index, 1, true_label, k_min, k_max,
+    #                                    os.path.join(output_dir, 'clustering'), balanced=class_weight_balanced,
+    #                                    num_consensus=num_consensus, num_iteration=num_iteration,
+    #                                    tol=tol, predefined_c=cluster_predefined_c,
+    #                                    weight_initialization_type=weight_initialization_type,
+    #                                    n_threads=n_threads, save_models=save_models, verbose=verbose)
+    x=input_data.get_x()[split_index[0][0]]
+    y = input_data.get_y_raw()[split_index[0][0]]
+    label=hydra_solver_svm(1, x, y, k, os.path.join(output_dir, 'clustering'), balanced=class_weight_balanced,
+                     num_consensus=num_consensus, num_iteration=num_iteration,
+                     tol=tol, predefined_c=cluster_predefined_c,
+                     weight_initialization_type=weight_initialization_type,
+                     n_threads=n_threads, save_models=save_models, verbose=verbose)
+    return label
 
 def clustering(feature_tsv, output_dir, k_min, k_max, cv_repetition, true_label,covariate_tsv=None, cv_strategy='hold_out', save_models=False,
             cluster_predefined_c=0.25, class_weight_balanced=True, weight_initialization_type='DPP', num_iteration=50,
@@ -121,6 +126,7 @@ def clustering(feature_tsv, output_dir, k_min, k_max, cv_repetition, true_label,
                                                        tol=tol, predefined_c=cluster_predefined_c,
                                                        weight_initialization_type=weight_initialization_type,
                                                        n_threads=n_threads, save_models=save_models, verbose=verbose)
+    
 
     wf_clustering.run()
     print('Finish...')
