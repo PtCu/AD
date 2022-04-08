@@ -5,7 +5,8 @@ from unicodedata import decimal
 
 from sklearn.decomposition import LatentDirichletAllocation
 from CHIMERA.CHIMERAClusterer import CHIMERAClusterer
-# from HYDRA.HYDRAClusterer import HYDRAClusterer
+from HYDRA.HYDRAClusterer import HYDRAClusterer
+from HYDRA.mlni.hydra_clustering import clustering as HYDRAClustering
 from Kmedians.KMedianClusterer import KMedianClusterer
 from Hierachical.HierachicalClusterer import HierachicalClusterer
 
@@ -48,8 +49,9 @@ def test_hierachical():
     X["pt_ID"] = ID
     X["group"] = group
     X["len"] = 1000
+    X["true_label"] = true_label
     utl.eval_K(X, 2, 10, cwd_path+"/"+name+"/output/"+name+".png",
-               HierachicalClusterer, name, true_label)
+               HierachicalClusterer, name)
 
 
 def test_K_medians():
@@ -65,9 +67,10 @@ def test_K_medians():
     X["pt_nc_cov"] = pt_nc_cov
     X["pt_ID"] = ID
     X["group"] = group
-    X["len"]=1000
+    X["len"] = 1000
+    X["true_label"] = true_label
     utl.eval_K(X, 2, 10, cwd_path+"/"+name+"/output/"+name+".png",
-               KMedianClusterer, name, true_label)
+               KMedianClusterer, name)
 
 
 def test_chimera():
@@ -82,28 +85,25 @@ def test_chimera():
     X["pt_nc_cov"] = pt_nc_cov
     X["pt_ID"] = ID
     X["group"] = group
-    X["len"]=500
+    X["len"] = 500
+    X["true_label"] = true_label
     utl.eval_K(X, 2, 10, cwd_path+"/"+name+"/output/"+name+".png",
-               CHIMERAClusterer, name, true_label)
+               CHIMERAClusterer, name, pt_only=True)
 
 
 def test_hydra():
     name = "HYDRA"
     print("test "+name)
-    true_label = np.append(np.ones(250), np.ones(250)*2)
-
-    pt_nc_img, pt_nc_cov, ID, group = utl.get_data(
-        simulated_data1)
-    X = {}
-    X["pt_nc_img"] = pt_nc_img
-    X["pt_nc_cov"] = pt_nc_cov
-    X["pt_ID"] = ID
-    X["group"] = group
-    X["len"] = 500
+    # X = {}
+    # X["feature"] = simulated_feature
+    # X["cov"]=simulated_cov
+    # X["outputdir"] = cwd_path+"/"+name+"/output/"
     # utl.eval_K(X, 2, 10, cwd_path+"/"+name+"/output/"+name+".png",
-    #            HYDRAClusterer, name, true_label)
+    #            HYDRAClusterer, name)
+    true_label = np.append(np.zeros(250), np.ones(250))
 
-    return
+    HYDRAClustering(simulated_feature, cwd_path+"/"+name+"/output/",
+                    2, 10, 2, true_label, covariate_tsv=simulated_cov)
 
 
 def test_lda():
@@ -113,15 +113,16 @@ def test_lda():
         np.zeros(500), np.append(np.ones(250), np.ones(250)*2))
 
     pt_nc_img, pt_nc_cov, ID, group = utl.get_data(
-        simulated_data1, decimal=3)
+        simulated_data1, decimals=3)
     X = {}
     X["pt_nc_img"] = pt_nc_img
     X["pt_nc_cov"] = pt_nc_cov
     X["pt_ID"] = ID
     X["group"] = group
     X["len"] = 1000
+    X["true_label"] = true_label
     utl.eval_K(X, 2, 10, cwd_path+"/"+name+"/output/"+name+".png",
-               LDAClusterer, name, true_label)
+               LDAClusterer, name)
 
 
 def test_nmf():
@@ -131,15 +132,16 @@ def test_nmf():
         np.zeros(500), np.append(np.ones(250), np.ones(250)*2))
 
     pt_nc_img, pt_nc_cov, ID, group = utl.get_data(
-        simulated_data1, decimal=3)
+        simulated_data1, decimals=3)
     X = {}
     X["pt_nc_img"] = pt_nc_img
     X["pt_nc_cov"] = pt_nc_cov
     X["pt_ID"] = ID
     X["group"] = group
     X["len"] = 1000
+    X["true_label"] = true_label
     utl.eval_K(X, 2, 10, cwd_path+"/"+name+"/output/"+name+".png",
-               NMFClusterer, name, true_label)
+               NMFClusterer, name)
 
 
 def test_urf():
@@ -156,8 +158,9 @@ def test_urf():
     X["pt_ID"] = ID
     X["group"] = group
     X["len"] = 1000
+    X["true_label"] = true_label
     utl.eval_K(X, 2, 10, cwd_path+"/"+name+"/output/"+name+".png",
-               URFClusterer, name, true_label)
+               URFClusterer, name)
     return
 
 
@@ -178,10 +181,10 @@ def test_moe():
 
 
 if __name__ == "__main__":
-
+    # test_hydra()
+    test_chimera()
+    # test_nmf()
+    # test_lda()
+    # test_urf()
     # test_hierachical()
     # test_K_medians()
-    test_chimera()
-    test_nmf()
-    test_lda()
-    test_urf()

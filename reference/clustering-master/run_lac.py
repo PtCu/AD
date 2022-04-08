@@ -4,7 +4,7 @@
 # (e) hasanzadeh@cs.pitt.edu
 
 import numpy as np
-from utils import *
+from utilities.utils import *
 
 # Read and store the input data
 PERFIX = 'dataset/'

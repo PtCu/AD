@@ -1,8 +1,9 @@
-from mlni.clustering import RB_DualSVM_Subtype
-from mlni.base import RB_Input
-import os, pickle
-from mlni.utils import make_cv_partition
-from mlni.utils import consensus_clustering, cv_cluster_stability, hydra_solver_svm, time_bar, cluster_stability
+from HYDRA.mlni.clustering import RB_DualSVM_Subtype
+from HYDRA.mlni.base import RB_Input
+import os
+import pickle
+from HYDRA.mlni.utils import make_cv_partition
+from HYDRA.mlni.utils import consensus_clustering, cv_cluster_stability, hydra_solver_svm, time_bar, cluster_stability
 __author__ = "Junhao Wen"
 __copyright__ = "Copyright 2019-2020 The CBICA & SBIA Lab"
 __credits__ = ["Junhao Wen, Erdem Varol"]
@@ -22,10 +23,10 @@ def clustering_one_round(feature_tsv, output_dir, k, cv_repetition=1, covariate_
     else:
         input_data = RB_Input(feature_tsv, covariate_tsv=covariate_tsv)
 
-    ## data split
+    # data split
     print('Data split was performed based on validation strategy: %s...\n' % cv_strategy)
     if cv_strategy == "hold_out":
-        ## check if data split has been done, if yes, the pickle file is there
+        # check if data split has been done, if yes, the pickle file is there
         if os.path.isfile(os.path.join(output_dir, 'data_split_stratified_' + str(cv_repetition) + '-holdout.pkl')):
             split_index = pickle.load(open(os.path.join(
                 output_dir, 'data_split_stratified_' + str(cv_repetition) + '-holdout.pkl'), 'rb'))
@@ -33,7 +34,7 @@ def clustering_one_round(feature_tsv, output_dir, k, cv_repetition=1, covariate_
             split_index, _ = make_cv_partition(
                 input_data.get_y(), cv_strategy, output_dir, cv_repetition)
     elif cv_strategy == "k_fold":
-        ## check if data split has been done, if yes, the pickle file is there
+        # check if data split has been done, if yes, the pickle file is there
         if os.path.isfile(os.path.join(output_dir, 'data_split_stratified_' + str(cv_repetition) + '-fold.pkl')):
             split_index = pickle.load(open(os.path.join(
                 output_dir, 'data_split_stratified_' + str(cv_repetition) + '-fold.pkl'), 'rb'))
@@ -44,25 +45,26 @@ def clustering_one_round(feature_tsv, output_dir, k, cv_repetition=1, covariate_
     print('Data split has been done!\n')
 
     print('Starts semi-supervised clustering...')
-    ## Here, semi-supervised clustering
+    # Here, semi-supervised clustering
     # wf_clustering = RB_DualSVM_Subtype(input_data, feature_tsv, split_index, 1, true_label, k_min, k_max,
     #                                    os.path.join(output_dir, 'clustering'), balanced=class_weight_balanced,
     #                                    num_consensus=num_consensus, num_iteration=num_iteration,
     #                                    tol=tol, predefined_c=cluster_predefined_c,
     #                                    weight_initialization_type=weight_initialization_type,
     #                                    n_threads=n_threads, save_models=save_models, verbose=verbose)
-    x=input_data.get_x()[split_index[0][0]]
+    x = input_data.get_x()[split_index[0][0]]
     y = input_data.get_y_raw()[split_index[0][0]]
-    label=hydra_solver_svm(1, x, y, k, os.path.join(output_dir, 'clustering'), balanced=class_weight_balanced,
-                     num_consensus=num_consensus, num_iteration=num_iteration,
-                     tol=tol, predefined_c=cluster_predefined_c,
-                     weight_initialization_type=weight_initialization_type,
-                     n_threads=n_threads, save_models=save_models, verbose=verbose)
-    return label
+    label = hydra_solver_svm(1, x, y, k, os.path.join(output_dir, 'clustering'), balanced=class_weight_balanced,
+                             num_consensus=num_consensus, num_iteration=num_iteration,
+                             tol=tol, predefined_c=cluster_predefined_c,
+                             weight_initialization_type=weight_initialization_type,
+                             n_threads=n_threads, save_models=save_models, verbose=verbose)
+    return label,x,y
 
-def clustering(feature_tsv, output_dir, k_min, k_max, cv_repetition, true_label,covariate_tsv=None, cv_strategy='hold_out', save_models=False,
-            cluster_predefined_c=0.25, class_weight_balanced=True, weight_initialization_type='DPP', num_iteration=50,
-            num_consensus=20, tol=1e-8, n_threads=8, verbose=False):
+
+def clustering(feature_tsv, output_dir, k_min, k_max, cv_repetition, true_label, covariate_tsv=None, cv_strategy='hold_out', save_models=False,
+               cluster_predefined_c=0.25, class_weight_balanced=True, weight_initialization_type='DPP', num_iteration=50,
+               num_consensus=20, tol=1e-8, n_threads=8, verbose=False):
     """
     MLNI core function for clustering
     Args:
@@ -101,32 +103,35 @@ def clustering(feature_tsv, output_dir, k_min, k_max, cv_repetition, true_label,
     else:
         input_data = RB_Input(feature_tsv, covariate_tsv=covariate_tsv)
 
-    ## data split
+    # data split
     print('Data split was performed based on validation strategy: %s...\n' % cv_strategy)
     if cv_strategy == "hold_out":
-        ## check if data split has been done, if yes, the pickle file is there
+        # check if data split has been done, if yes, the pickle file is there
         if os.path.isfile(os.path.join(output_dir, 'data_split_stratified_' + str(cv_repetition) + '-holdout.pkl')):
-            split_index = pickle.load(open(os.path.join(output_dir, 'data_split_stratified_' + str(cv_repetition) + '-holdout.pkl'), 'rb'))
+            split_index = pickle.load(open(os.path.join(
+                output_dir, 'data_split_stratified_' + str(cv_repetition) + '-holdout.pkl'), 'rb'))
         else:
-            split_index, _ = make_cv_partition(input_data.get_y(), cv_strategy, output_dir, cv_repetition)
+            split_index, _ = make_cv_partition(
+                input_data.get_y(), cv_strategy, output_dir, cv_repetition)
     elif cv_strategy == "k_fold":
-        ## check if data split has been done, if yes, the pickle file is there
+        # check if data split has been done, if yes, the pickle file is there
         if os.path.isfile(os.path.join(output_dir, 'data_split_stratified_' + str(cv_repetition) + '-fold.pkl')):
-            split_index = pickle.load(open(os.path.join(output_dir, 'data_split_stratified_' + str(cv_repetition) + '-fold.pkl'), 'rb'))
+            split_index = pickle.load(open(os.path.join(
+                output_dir, 'data_split_stratified_' + str(cv_repetition) + '-fold.pkl'), 'rb'))
         else:
-            split_index, _ = make_cv_partition(input_data.get_y(), cv_strategy, output_dir, cv_repetition)
+            split_index, _ = make_cv_partition(
+                input_data.get_y(), cv_strategy, output_dir, cv_repetition)
 
     print('Data split has been done!\n')
 
     print('Starts semi-supervised clustering...')
-    ## Here, semi-supervised clustering
-    wf_clustering = RB_DualSVM_Subtype(input_data, feature_tsv, split_index, cv_repetition, true_label,k_min, k_max,
-                                                       os.path.join(output_dir, 'clustering'), balanced=class_weight_balanced,
-                                                       num_consensus=num_consensus, num_iteration=num_iteration,
-                                                       tol=tol, predefined_c=cluster_predefined_c,
-                                                       weight_initialization_type=weight_initialization_type,
-                                                       n_threads=n_threads, save_models=save_models, verbose=verbose)
-    
+    # Here, semi-supervised clustering
+    wf_clustering = RB_DualSVM_Subtype(input_data, feature_tsv, split_index, cv_repetition, true_label, k_min, k_max,
+                                       os.path.join(output_dir, 'clustering'), balanced=class_weight_balanced,
+                                       num_consensus=num_consensus, num_iteration=num_iteration,
+                                       tol=tol, predefined_c=cluster_predefined_c,
+                                       weight_initialization_type=weight_initialization_type,
+                                       n_threads=n_threads, save_models=save_models, verbose=verbose)
 
     wf_clustering.run()
     print('Finish...')

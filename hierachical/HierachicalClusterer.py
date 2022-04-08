@@ -19,9 +19,11 @@ class HierachicalClusterer:
         self.cluster_num = cluster_num
         self.labels_ = []
         self.x_data = []
+        self.y_data=[]
 
     def fit(self, X):
         self.x_data = X["pt_nc_img"]
         model = cluster.AgglomerativeClustering(self.cluster_num)
         model.fit(self.x_data)
         self.labels_=model.labels_
+        self.y_data=X["true_label"]

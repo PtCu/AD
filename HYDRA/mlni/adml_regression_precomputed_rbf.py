@@ -1,8 +1,8 @@
-from mlni.regression_precomputed_rbf import RB_RepeatedHoldOut_DualSVM_Regression, RB_KFold_DualSVM_Regression, \
+from HYDRA.mlni.regression_precomputed_rbf import RB_RepeatedHoldOut_DualSVM_Regression, RB_KFold_DualSVM_Regression, \
     VB_RepeatedHoldOut_DualSVM_Regression, VB_KFold_DualSVM_Regression
-from mlni.base import RB_Input, VB_Input
+from HYDRA.mlni.base import RB_Input, VB_Input
 import os, pickle
-from mlni.utils import make_cv_partition
+from HYDRA.mlni.utils import make_cv_partition
 
 __author__ = "Junhao Wen"
 __copyright__ = "Copyright 2019-2020 The CBICA & SBIA Lab"

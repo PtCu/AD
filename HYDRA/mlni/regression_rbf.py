@@ -1,4 +1,4 @@
-from mlni.base import WorkFlow, RegressionAlgorithm, RegressionValidation
+from HYDRA.mlni.base import WorkFlow, RegressionAlgorithm, RegressionValidation
 import numpy as np
 import pandas as pd
 import os, json
@@ -6,7 +6,7 @@ from sklearn.svm import SVR
 from sklearn.metrics import mean_absolute_error
 from sklearn.model_selection import KFold, ShuffleSplit
 from multiprocessing.pool import ThreadPool
-from mlni.utils import time_bar
+from HYDRA.mlni.utils import time_bar
 from joblib import dump
 
 __author__ = "Junhao Wen"

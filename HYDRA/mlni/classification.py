@@ -1,4 +1,4 @@
-from mlni.base import WorkFlow, ClassificationAlgorithm, ClassificationValidation
+from HYDRA.mlni.base import WorkFlow, ClassificationAlgorithm, ClassificationValidation
 import numpy as np
 import pandas as pd
 import os, json
@@ -6,7 +6,7 @@ from sklearn.svm import SVC, SVR
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import StratifiedKFold, StratifiedShuffleSplit
 from multiprocessing.pool import ThreadPool
-from mlni.utils import evaluate_prediction, gram_matrix_linear, time_bar
+from HYDRA.mlni.utils import evaluate_prediction, gram_matrix_linear, time_bar
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.decomposition import PCA
 from sklearn.feature_selection import f_classif, RFE, SelectPercentile, SelectFromModel

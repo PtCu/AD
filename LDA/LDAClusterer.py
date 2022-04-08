@@ -18,9 +18,11 @@ class LDAClusterer:
         self.cluster_num = cluster_num
         self.labels_=[]
         self.x_data=[]
+        self.y_data=[]
 
     def fit(self, X):
         self.x_data = X["pt_nc_img"]
+        self.y_data = X["true_label"]
         source_flatten = self.x_data.flatten()
         count_data = Counter(source_flatten)
         Mx = np.zeros([len(self.x_data), len(count_data)], dtype=int)

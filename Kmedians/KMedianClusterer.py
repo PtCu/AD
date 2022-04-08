@@ -30,6 +30,7 @@ class KMedianClusterer:
     def __init__(self, cluster_num):
         self.cluster_num = cluster_num
         self.x_data =[]
+        self.y_data=[]
 
 
     def fit(self,X):
@@ -37,6 +38,7 @@ class KMedianClusterer:
         self.points = self.__pick_start_point(self.x_data, self.cluster_num)
         self.labels_=np.zeros(len(self.x_data))
         self.__cluster()
+        self.y_data = X["true_label"]
 
     def __cluster(self):
         result = []

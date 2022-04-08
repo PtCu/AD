@@ -4,7 +4,7 @@
 # (e) mohammad.hmofrad@pitt.edu
 
 import numpy as np
-from utils import *
+from utilities.utils import *
 import scipy
 
 np.random.seed()

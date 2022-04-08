@@ -1,6 +1,6 @@
 import abc
 import pandas as pd
-from mlni.utils import GLMcorrection, load_data, revert_mask
+from HYDRA.mlni.utils import GLMcorrection, load_data, revert_mask
 import numpy as np
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 import os

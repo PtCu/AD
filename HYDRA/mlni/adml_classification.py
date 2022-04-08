@@ -1,9 +1,9 @@
-from mlni.classification import RB_RepeatedHoldOut_DualSVM_Classification, RB_KFold_DualSVM_Classification, \
+from HYDRA.mlni.classification import RB_RepeatedHoldOut_DualSVM_Classification, RB_KFold_DualSVM_Classification, \
     VB_RepeatedHoldOut_DualSVM_Classification, VB_KFold_DualSVM_Classification, RB_RepeatedHoldOut_DualSVM_Classification_Nested_Feature_Selection, \
     VB_RepeatedHoldOut_DualSVM_Classification_Nested_Feature_Selection
-from mlni.base import RB_Input, VB_Input
+from HYDRA.mlni.base import RB_Input, VB_Input
 import os, pickle
-from mlni.utils import make_cv_partition, prepare_opnmf_tsv_voting, voting_system
+from HYDRA.mlni.utils import make_cv_partition, prepare_opnmf_tsv_voting, voting_system
 import pandas as pd
 
 __author__ = "Junhao Wen"

@@ -2,10 +2,12 @@ import os
 import numpy as np
 import pandas as pd
 from sklearn.metrics import silhouette_samples
-from mlni.utils import consensus_clustering, cv_cluster_stability, hydra_solver_svm, time_bar, cluster_stability
-from mlni.base import WorkFlow
+from HYDRA.mlni.utils import consensus_clustering, cv_cluster_stability, hydra_solver_svm, time_bar, cluster_stability
+from HYDRA.mlni.base import WorkFlow
 from sklearn.metrics import silhouette_score
 from matplotlib import pyplot as plt
+from sklearn.metrics import adjusted_rand_score as ARI
+rng = np.random.RandomState(1)
 __author__ = "Junhao Wen"
 __copyright__ = "Copyright 2019-2020 The CBICA & SBIA Lab"
 __credits__ = ["Junhao Wen, Erdem Varol"]
@@ -16,6 +18,7 @@ __email__ = "junhao.wen89@gmail.com"
 __status__ = "Development"
 cwd_path = os.getcwd()
 output_dir = cwd_path + "/HYDRA/output/"
+
 
 class RB_DualSVM_Subtype(WorkFlow):
     """
@@ -110,12 +113,57 @@ class RB_DualSVM_Subtype(WorkFlow):
         # all_df.to_csv(os.path.join(self._output_dir, 'clustering_assignment.tsv'), index=False,
         #               sep='\t', encoding='utf-8')
 
+    def cluster_stability(self, X, est, n_iter=20, random_state=None, pt_only=False):
+        labels = []
+        indices = []
+        X_copy = {}
+        sample_indices = np.arange(0, X["pt_nc_img"].shape[0])
+        for i in range(n_iter):
+            # draw bootstrap samples, store indices
+            # rng.shuffle(sample_indices)
+            sample_indices = rng.randint(
+                0, X["pt_nc_img"].shape[0], X["pt_nc_img"].shape[0])
+            # X_bootstrap = X[sample_indices]
+            X_copy["pt_nc_img"] = X["pt_nc_img"][sample_indices]
+            X_copy["pt_nc_cov"] = X["pt_nc_cov"][sample_indices]
+            X_copy["pt_ID"] = X["pt_ID"][sample_indices]
+            X_copy["group"] = X["group"][sample_indices]
+            est.fit(X_copy)
+            # sample_indices = rng.randint(
+            #     0, X["pt_nc_img"].shape[0], X["pt_nc_img"].shape[0])
+            # store clustering outcome using original indices
+            if(pt_only):
+                tmp_indices = sample_indices[X_copy["group"] != 0]-X["len"]
+                indices.append(tmp_indices)
+                relabel = -np.ones(X["len"], dtype=np.int)
+                relabel[tmp_indices] = est.labels_
+            else:
+                indices.append(sample_indices)
+                relabel = -np.ones(X["pt_nc_img"].shape[0], dtype=np.int)
+                relabel[sample_indices] = est.labels_
+            # est = clone(est)
+            if hasattr(est, "random_state"):
+                # randomize estimator if possible
+                est.random_state = rng.randint(1e5)
+
+            labels.append(relabel)
+
+        scores = []
+        for l, i in zip(labels, indices):
+            for k, j in zip(labels, indices):
+                # we also compute the diagonal which is a bit silly
+                in_both = np.intersect1d(i, j)
+                scores.append(ARI(l[in_both], k[in_both]))
+        return np.mean(scores)
+
     def run(self):
         x = self._input.get_x()
         y = self._input.get_y_raw()
         data_label_folds_ks = np.zeros(
             (y.shape[0], self._cv_repetition, self._k_max - self._k_min + 1)).astype(int)
         silhouette_y = []
+        labels=[]
+        indices=[]
         for i in range(self._cv_repetition):
             time_bar(i, self._cv_repetition)
             print()
@@ -135,10 +183,13 @@ class RB_DualSVM_Subtype(WorkFlow):
                 data_label_fold[self._split_index[i]
                                 [0]] = training_final_prediction
                 data_label_folds_ks[:, i, j - self._k_min] = data_label_fold
+                labels.append(training_final_prediction)
+                indices.append(self._split_index[i][0])
 
         print('Estimating clustering stability...\n')
         # for the adjusted rand index, only consider the PT results
         adjusted_rand_index_results = np.zeros(self._k_max - self._k_min + 1)
+        stability_y=[]
         # index_pt = np.where(y == 1)[0]  # index for PTs
         for m in range(self._k_max - self._k_min + 1):
             # 此时的result保存了多轮训练的结果. result[i]为第i轮训练的结果
@@ -148,16 +199,25 @@ class RB_DualSVM_Subtype(WorkFlow):
                 result, self._k_range_list[m])
             # saving each k result into the final adjusted_rand_index_results
             adjusted_rand_index_results[m] = adjusted_rand_index_result
-            silhouette = silhouette_score(x, result)
-            silhouette_y.append(silhouette)
+            silhouette_y.append(silhouette_score(x, result[:, 0]))
+            stability_score=[]
+            for l, i in zip(labels, indices):
+                for k, j in zip(labels, indices):
+                    # we also compute the diagonal which is a bit silly
+                    in_both = np.intersect1d(i, j)
+                    stability_score.append(
+                        ARI(result[in_both][:,0], result[in_both][:,1]))
+            stability_y.append(np.mean(stability_score))
 
-        silhouette_x = np.arange(self._k_min, self._k_max+1, dtype=int)
+        x_range = np.arange(self._k_min, self._k_max+1, dtype=int)
         plt.title("HYDRA")
-        plt.xlabel("K range")
-        plt.ylabel("Silhoutte score")
-        plt.plot(silhouette_x, silhouette_y)
-        # plt.show()
-        plt.savefig(output_dir+"outcome.png")
+        plt.xlabel("n_clusters")
+        plt.ylabel("ARI,Sihoutte,Stability")
+        si, = plt.plot(x_range, silhouette_y, label="Silhoutte")
+        ar, = plt.plot(x_range, adjusted_rand_index_results, label="ARI")
+        st, = plt.plot(x_range, stability_y, label="Stability")
+        plt.legend([si, ar,st], ["Silhouette", "ARI","Stability"])
+        plt.savefig(output_dir+"HYDRA.png")
         plt.clf()
 
         # print('Computing the final consensus group membership...\n')
