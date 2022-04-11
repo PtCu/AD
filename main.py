@@ -14,6 +14,7 @@ from pkg_resources import IResourceProvider
 from LDA.LDAClusterer import LDAClusterer
 from NMF.NMFClusterer import NMFClusterer
 from URF.URFClusterer import URFClusterer
+from MOE.MOEClusterer import MOEClusterer
 import utilities.utils as utl
 from ctypes import util
 import os
@@ -161,7 +162,7 @@ def test_urf():
     X["true_label"] = true_label
     utl.eval_K(X, 2, 10, cwd_path+"/"+name+"/output/"+name+".png",
                URFClusterer, name)
-    return
+    
 
 
 def test_Bayesian():
@@ -177,14 +178,31 @@ def test_sustain():
 
 
 def test_moe():
-    return
+    name = "MOE"
+    print("test "+name)
+    true_label = np.append(
+        np.zeros(500), np.append(np.ones(250), np.ones(250)*2))
+
+    pt_nc_img, pt_nc_cov, ID, group = utl.get_data(
+        simulated_data1)
+    X = {}
+    X["pt_nc_img"] = pt_nc_img
+    X["pt_nc_cov"] = pt_nc_cov
+    X["pt_ID"] = ID
+    X["group"] = group
+    X["len"] = 1000
+    X["true_label"] = true_label
+    utl.eval_K(X, 2, 10, cwd_path+"/"+name+"/output/"+name+".png",
+               MOEClusterer, name)
+ 
 
 
 if __name__ == "__main__":
+    test_moe()
     # test_hydra()
-    test_chimera()
+    # test_chimera()
     # test_nmf()
     # test_lda()
-    # test_urf()
+    test_urf()
     # test_hierachical()
     # test_K_medians()
