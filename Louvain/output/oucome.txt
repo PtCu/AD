@@ -4,3 +4,7 @@ Louvain :
 ARI: -7.262662327826855e-05
 Louvain :
 ARI: 0.0
+Louvain :
+ARI: 0.0
+Louvain :
+ARI: 0.0

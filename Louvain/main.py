@@ -9,7 +9,7 @@ import csv
 from sklearn.metrics import adjusted_rand_score as ARI
 import math
 import numpy as np
-from typing import Counter
+
 
 cwd_path = os.getcwd()
 
@@ -119,7 +119,6 @@ if __name__ == "__main__":
     x_img = np.transpose(feat_img[:, group == 1])  # patients
 
     x_img_flatten = x_img.flatten()
-    count_data = Counter(x_img_flatten)
 
     ID_flatten = ID.flatten()
 

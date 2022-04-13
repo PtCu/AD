@@ -204,7 +204,7 @@ class RandomForestEmbedding(BaseForest):
         self.max_leaf_nodes = max_leaf_nodes
         self.sparse_output = sparse_output
 
-    def _set_oob_score_and_attributes(self, X, y):
+    def _set_oob_score(self, X, y):
         raise NotImplementedError("OOB score not supported in tree embedding")
 
     def fit(self, X, y=None, sample_weight=None):

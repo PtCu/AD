@@ -26,8 +26,6 @@ def cluster_stability(X, est, n_iter=10, random_state=None, pt_only=False):
         X_copy["pt_nc_cov"] = X["pt_nc_cov"][sample_indices]
         X_copy["pt_ID"] = X["pt_ID"][sample_indices]
         X_copy["group"] = X["group"][sample_indices]
-  
-     
         # sample_indices = rng.randint(
         #     0, X["pt_nc_img"].shape[0], X["pt_nc_img"].shape[0])
         # store clustering outcome using original indices
@@ -127,25 +125,40 @@ def clustering(X, est):
     return label
 
 
-def eval_K(X, k_min, k_max, filename, est, title, pt_only=False):
-    x = np.arange(k_min, k_max+1, dtype=int)
+
+def eval_K(X, k_min, k_max, filename, est, title, pt_only=False,stride=1,get_k_num=False):
+    
     silhouette_y = []
     ari_y = []
     stability_y = []
+    k_num_y=[]
 
-    for k in range(k_min, k_max+1):
+    for k in np.arange(k_min, k_max+1,stride):
         sk = est(k)
         label = clustering(X, sk)
+        if sk.k_num==1 or sk.k_num==len(X["pt_nc_img"]):
+            silhouette_y.append(np.nan)
+            ari_y.append(np.nan)
+            stability_y.append(np.nan)
+            k_num_y.append(1)
+            continue
+        #silhouette_score requires more than 1 cluster labels. 
         silhouette_y.append(silhouette_score(sk.x_data, label))
         ari_y.append(ARI(label, sk.y_data))
         stability_y.append(cluster_stability(X, sk, pt_only=pt_only))
+        k_num_y.append(sk.k_num)
 
+    x = np.arange(k_min, k_max+1, stride)
     plt.title(title)
     plt.xlabel("n_clusters")
     plt.ylabel("ARI,Sihoutte,Stability")
     si, = plt.plot(x, silhouette_y, label="Silhoutte")
     ar, = plt.plot(x, ari_y, label="ARI")
     st, = plt.plot(x, stability_y, label="Stability")
-    plt.legend([st, si, ar], ["Stability", "Silhouette", "ARI"])
+    if(get_k_num):
+        k_n,=plt.plot(x,k_num_y,label="K num")
+        plt.legend([st,si,ar,k_n],[["Stability", "Silhouette", "ARI","K num"]])
+    else:
+        plt.legend([st, si, ar], ["Stability", "Silhouette", "ARI"])
     plt.savefig(filename)
     plt.clf()
