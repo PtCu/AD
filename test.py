@@ -15,18 +15,18 @@ from Bayesian.bhc import (BayesianHierarchicalClustering,
 
 cwd_path = os.getcwd()
 
-output_file = cwd_path + "/Bayesian-clustering/output/output.tsv"
+output_file = cwd_path + "/Bayesian/output/output.tsv"
 
-origin_data = cwd_path + "/Bayesian-clustering/data/data.csv"
+origin_data = cwd_path + "/Bayesian/data/data.csv"
 
-simulated_data = cwd_path + "/Bayesian-clustering/data/simulated_data.tsv"
+simulated_data = cwd_path + "/Bayesian/data/simulated_data.tsv"
 
-outcome_file = cwd_path + "/Bayesian-clustering/output/oucome.txt"
+outcome_file = cwd_path + "/Bayesian/output/oucome.txt"
 
-output_dir = cwd_path + "/Bayesian-clustering/output/"
+output_dir = cwd_path + "/Bayesian/output/"
 
 
-def read_data(filename):
+def read_data(filename, decimals=16):
     sys.stdout.write('\treading data...\n')
     feat_cov = None
     ID = None
@@ -44,33 +44,25 @@ def read_data(filename):
         data = np.asarray(data[1:])
 
         group = (data[:, np.nonzero(header == 'GROUP')
-                 [0]].flatten()).astype(int)
+                      [0]]).astype(int)
         feat_img = (data[:, np.nonzero(header == 'ROI')[0]]).astype(np.float)
         if 'COVAR' in header:
             feat_cov = (data[:, np.nonzero(header == 'COVAR')[0]]).astype(
-                np.float)
+                np.int)
         if 'ID' in header:
-            ID = data[:, np.nonzero(header == 'ID')[0]]
-            ID = ID[group == 1]
+            ID = (data[:, np.nonzero(header == 'ID')[0]]).astype(np.int)
+            # ID = ID[group == 1]
 
-    return feat_cov, feat_img, ID, group
+    return feat_cov, np.around(feat_img, decimals=decimals), ID, group
 
 
-def get_data(filename):
-    feat_cov, feat_img, ID, group = read_data(filename)
+def get_data(filename, decimals=16):
+    pt_nc_cov, pt_nc_img, ID, group = read_data(filename, decimals)
 
-    feat_all = np.hstack((feat_cov, feat_img))
+    # pt_nc_all = np.hstack((pt_nc_cov, pt_nc_img))
 
-    feat_img = np.transpose(feat_img)
+    return pt_nc_img, pt_nc_cov, ID, group
 
-    x_img = feat_img[:, group == 1]  # patients
-    x_img = np.transpose(x_img)
-
-    feat_all = np.transpose(feat_all)
-    x_all = feat_all[:, group == 1]  # patients
-    x_all = np.transpose(x_all)
-
-    return x_img, x_all, ID
 
 
 def run_bhc(data,alpha=1):
@@ -125,9 +117,12 @@ def get_label(node_ids, arc_list):
         for node in nodeSet:
             if dag.in_degree(node) == 1 and dag.out_degree(node) == 0:
                 output_dict[node] = id
+                
     output_label = np.zeros(len(output_dict), dtype=int)
+
     for key in output_dict:
         output_label[key] = output_dict[key]
+
     return output_label
 
 
@@ -156,11 +151,12 @@ def write_outputfile(output_file, ID, label, true_label, outcome_file, name):
 
 
 if __name__ == "__main__":
-    x_img, x_all, ID = get_data(simulated_data)
+    pt_nc_img, pt_nc_cov, ID, group  = get_data(simulated_data)
 
     #label_bhc = run_bhc(x_img)
-    label_brt = run_brt(x_img)
-    true_label = numpy.append(numpy.zeros(250), numpy.ones(250))
+    label_brt = run_brt(pt_nc_img)
+    true_label = np.append(
+        np.zeros(500), np.append(np.ones(250), np.ones(250)*2))
 
     # write_outputfile(output_file, ID, label_bhc,
     #                  true_label, outcome_file, "bhc")

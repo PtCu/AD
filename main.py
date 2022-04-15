@@ -54,7 +54,7 @@ def test_hierachical():
     X["len"] = 1000
     X["true_label"] = true_label
     utl.eval_K(X, 2, 10, cwd_path+"/"+name+"/output/"+name+".png",
-               HierachicalClusterer, name)
+               HierachicalClusterer, name,get_k_num=True)
 
 
 def test_K_medians():
@@ -170,19 +170,20 @@ def test_urf():
 def test_Bayesian():
     name = "Bayesian"
     print("test "+name)
+    # true_label = np.append(
+    # #     np.zeros(500), np.append(np.ones(250), np.ones(250)*2))
     true_label = np.append(
         np.zeros(500), np.append(np.ones(250), np.ones(250)*2))
-
     pt_nc_img, pt_nc_cov, ID, group = utl.get_data(
         simulated_data1, decimals=3)
     X = {}
+    X["group"] = group
     X["pt_nc_img"] = pt_nc_img
     X["pt_nc_cov"] = pt_nc_cov
     X["pt_ID"] = ID
-    X["group"] = group
     X["len"] = 1000
     X["true_label"] = true_label
-    utl.eval_K(X, 0, 1, cwd_path+"/"+name+"/output/"+name+".png",
+    utl.eval_K(X, 0.05, 1, cwd_path+"/"+name+"/output/"+name+".png",
                BayesianClusterer, name,stride=0.05,get_k_num=True)
 
     return
@@ -193,18 +194,17 @@ def test_louvain():
     print("test "+name)
     true_label = np.append(
         np.zeros(500), np.append(np.ones(250), np.ones(250)*2))
-
     pt_nc_img, pt_nc_cov, ID, group = utl.get_data(
         simulated_data1, decimals=3)
     X = {}
+    X["group"] = group
     X["pt_nc_img"] = pt_nc_img
     X["pt_nc_cov"] = pt_nc_cov
     X["pt_ID"] = ID
-    X["group"] = group
     X["len"] = 1000
     X["true_label"] = true_label
-    utl.eval_K(X, 0.75, 1, cwd_path+"/"+name+"/output/"+name+".png",
-               LouvainClusterer, name,stride=0.025,get_k_num=True)
+    utl.eval_K(X, 0.7, 0.95, cwd_path+"/"+name+"/output/"+name+".png",
+               LouvainClusterer, name,stride=0.00125,get_k_num=True)
 
 
 
@@ -237,6 +237,8 @@ if __name__ == "__main__":
     # test_urf()
     # test_hierachical()
     # test_K_medians()
-    test_louvain()
     test_Bayesian()
+    #test_louvain()
+    
+    
     
