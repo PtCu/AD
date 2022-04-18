@@ -1,8 +1,6 @@
 import numpy as np
 import csv
 
-from pip import main
-from pandas import DataFrame, Series
 
 import pandas as pd
 
@@ -117,7 +115,6 @@ def gen_samples():
 
 
 if __name__ == "__main__":
-
     with open(feature_file, 'w', newline='') as f:
         tsv_w = csv.writer(f, delimiter='\t')
         title_feature = ["participant_id", "session_id", "diagnosis"]

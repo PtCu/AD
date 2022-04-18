@@ -44,7 +44,7 @@ def test_hierachical():
     true_label = np.append(
         np.zeros(500), np.append(np.ones(250), np.ones(250)*2))
 
-    pt_nc_img, pt_nc_cov, ID, group = utl.get_data(
+    pt_nc_img, pt_nc_cov,_, ID, group = utl.get_data(
         simulated_data1)
     X = {}
     X["pt_nc_img"] = pt_nc_img
@@ -63,7 +63,7 @@ def test_K_medians():
     true_label = np.append(
         np.zeros(500), np.append(np.ones(250), np.ones(250)*2))
 
-    pt_nc_img, pt_nc_cov, ID, group = utl.get_data(
+    pt_nc_img, pt_nc_cov,_, ID, group = utl.get_data(
         simulated_data1)
     X = {}
     X["pt_nc_img"] = pt_nc_img
@@ -81,7 +81,7 @@ def test_chimera():
     print("test "+name)
     true_label = np.append(np.ones(250), np.ones(250)*2)
 
-    pt_nc_img, pt_nc_cov, ID, group = utl.get_data(
+    pt_nc_img, pt_nc_cov,_, ID, group = utl.get_data(
         simulated_data1)
     X = {}
     X["pt_nc_img"] = pt_nc_img
@@ -115,7 +115,7 @@ def test_lda():
     true_label = np.append(
         np.zeros(500), np.append(np.ones(250), np.ones(250)*2))
 
-    pt_nc_img, pt_nc_cov, ID, group = utl.get_data(
+    pt_nc_img, pt_nc_cov,_, ID, group = utl.get_data(
         simulated_data1, decimals=3)
     X = {}
     X["pt_nc_img"] = pt_nc_img
@@ -134,7 +134,7 @@ def test_nmf():
     true_label = np.append(
         np.zeros(500), np.append(np.ones(250), np.ones(250)*2))
 
-    pt_nc_img, pt_nc_cov, ID, group = utl.get_data(
+    pt_nc_img, pt_nc_cov,_, ID, group = utl.get_data(
         simulated_data1, decimals=3)
     X = {}
     X["pt_nc_img"] = pt_nc_img
@@ -237,8 +237,8 @@ if __name__ == "__main__":
     # test_urf()
     # test_hierachical()
     # test_K_medians()
-    # test_louvain()
-    test_Bayesian()
+    test_louvain()
+    #test_Bayesian()
     
     
     

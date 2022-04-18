@@ -82,8 +82,10 @@ def read_data(filename, decimals=16):
         if 'ID' in header:
             ID = (data[:, np.nonzero(header == 'ID')[0]]).astype(np.int)
             # ID = ID[group == 1]
+        if 'SET' in header:
+            set = (data[:, np.nonzero(header == 'SET')[0]])
 
-    return feat_cov, np.around(feat_img, decimals=decimals), ID, group
+    return feat_cov, np.around(feat_img, decimals=decimals),set, ID, group
 
 
 def write_outputfile(output_file, ID, label, true_label, outcome_file, name):
@@ -111,11 +113,11 @@ def write_outputfile(output_file, ID, label, true_label, outcome_file, name):
 
 
 def get_data(filename, decimals=16):
-    pt_nc_cov, pt_nc_img, ID, group = read_data(filename, decimals)
+    pt_nc_cov, pt_nc_img, set,ID, group = read_data(filename, decimals)
 
     # pt_nc_all = np.hstack((pt_nc_cov, pt_nc_img))
 
-    return pt_nc_img, pt_nc_cov, ID, group
+    return pt_nc_img, pt_nc_cov, set,ID, group
 
 
 def clustering(X, est):
@@ -140,6 +142,7 @@ def eval_K(X, k_min, k_max, filename, est, title, pt_only=False, stride=1, get_k
     k_num_y = []
 
     for k in np.arange(k_min, k_max, stride):
+        time_bar((k-k_min)/(k_max-k_min))
         sk = est(k)
         label = clustering(X, sk)
         if sk.k_num == 1 or sk.k_num == len(X["pt_nc_img"]):
@@ -153,7 +156,7 @@ def eval_K(X, k_min, k_max, filename, est, title, pt_only=False, stride=1, get_k
         ari_y.append(ARI(label, sk.y_data))
         stability_y.append(cluster_stability(X, sk, pt_only=pt_only))
         k_num_y.append(sk.k_num)
-        time_bar((k-k_min)/(k_max-k_min))
+        
 
     x = np.arange(k_min, k_max, stride)
     plt.title(title)

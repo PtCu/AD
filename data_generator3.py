@@ -1,5 +1,6 @@
 import numpy as np
 from pip import main
+from pyparsing import col
 from sklearn.utils import check_random_state, check_array
 import utilities.utils as utl
 import os
@@ -8,52 +9,66 @@ import csv
 import pandas as pd
 
 cwd_path = os.getcwd()
+data_dir = cwd_path+"/data/"
 
-source_data = cwd_path+"/data/simulated_data_source.tsv"
+EXTRA_DATA_NUM = 500
 
-file_name = cwd_path+"/data/simulated_data2.tsv"
-TARGET_NUM = 980
+source_file1 = os.path.join(data_dir, "1_NC001_ts.csv")
+source_file2 = os.path.join(data_dir, "1_NC002_ts.csv")
+source_file3 = os.path.join(data_dir, "1_NC003_ts.csv")
+source_file4 = os.path.join(data_dir, "1_NC004_ts.csv")
+tmp_file = os.path.join(data_dir, "tmp_data.csv")
+dest_file1 = os.path.join(data_dir, "synthetic_data1.csv")
+dest_file2 = os.path.join(data_dir, "synthetic_data2.csv")
+data = []
 
+SAMPLE_NUM = 170
+STEP = 50
+GROUP_LABEL = 1
+# 正常人标签
+NC_TYPE = 0
+# 病号标签
+PT_TYPE = 1
 
-def read_data(filename, decimals=16):
-    sys.stdout.write('\treading data...\n')
-    feat_cov = None
-    ID = None
-    with open(filename) as f:
-        data = list(csv.reader(f, delimiter='\t'))
-        header = np.asarray(data[0])
-        if 'GROUP' not in header:
-            sys.stdout.write(
-                'Error: group information not found. Please check csv header line for field "Group".\n')
-            sys.exit(1)
-        if 'ROI' not in header:
-            sys.stdout.write(
-                'Error: image features not found. Please check csv header line for field "IMG".\n')
-            sys.exit(1)
-        data = np.asarray(data[1:])
+# title1 = ["ID", "SET", "GROUP"]
+# title2 = ["participant_id", "session_id", "diagnosis"]
 
-        group = (data[:, np.nonzero(header == 'GROUP')
-                      [0]]).astype(int)
-        feat_img = (data[:, np.nonzero(header == 'ROI')[0]]).astype(np.float)
-        if 'COVAR' in header:
-            feat_cov = (data[:, np.nonzero(header == 'COVAR')[0]]).astype(
-                np.float)
-        if 'ID' in header:
-            ID = (data[:, np.nonzero(header == 'ID')[0]]).astype(np.int)
-            # ID = ID[group == 1]
+title1 = ["SET", "GROUP"]
+title2 = ["session_id", "diagnosis"]
 
-    return feat_cov, np.around(feat_img, decimals=decimals), ID, group
+source_file_list = [source_file1, source_file2, source_file3, source_file4]
+
+session_id = 0
 
 
-def get_data(filename, decimals=16):
-    pt_nc_cov, pt_nc_img, ID, group = read_data(filename, decimals)
+def read_data():
+    for idx in range(len(source_file_list)):
+        df = pd.read_csv(source_file_list[idx], header=None, sep=',')
+        if idx == 0:
+            for i in range(df.shape[1]):
+                title1.append("ROI")
+                title2.append("ROI"+str(i+1))
+        i = 0
+        j = SAMPLE_NUM-1
+        id = 0
+        while j < df.shape[1]:
+            for r in range(i, j):
+                item = []
+                # SET
+                item.append(session_id)
+                # GROUP
+                if idx == 0:
+                    item.append(NC_TYPE)
+                else:
+                    item.append(PT_TYPE)
+                for l in range(df.shape[1]):
+                    item.append(df.at[r, l])
+                data.append(item)
+            i += STEP
+            j += STEP
 
-    # pt_nc_all = np.hstack((pt_nc_cov, pt_nc_img))
 
-    return pt_nc_img, pt_nc_cov, ID, group
-
-
-def bootstrap_sample_column(X, random_state=1234, n_samples=TARGET_NUM):
+def bootstrap_sample_column(X, n_samples, random_state=1234):
     """bootstrap_sample_column
 
     Bootstrap sample the column of a dataset.
@@ -76,13 +91,11 @@ def bootstrap_sample_column(X, random_state=1234, n_samples=TARGET_NUM):
         The bootstrapped column.
     """
     random_state = check_random_state(random_state)
-    if n_samples is None:
-        n_samples = X.shape[0]
 
     return random_state.choice(X, size=n_samples, replace=True)
 
 
-def uniform_sample_column(X, random_state=1234, n_samples=TARGET_NUM):
+def uniform_sample_column(X, n_samples, random_state=1234):
     """uniform_sample_column
 
     Sample a column uniformly between its minimum and maximum value.
@@ -105,14 +118,12 @@ def uniform_sample_column(X, random_state=1234, n_samples=TARGET_NUM):
         Uniformly sampled column.
     """
     random_state = check_random_state(random_state)
-    if n_samples is None:
-        n_samples = X.shape[0]
 
     min_X, max_X = np.min(X), np.max(X)
     return random_state.uniform(min_X, max_X, size=n_samples)
 
 
-def generate_synthetic_features(X, method='bootstrap', random_state=1234, n_samples=TARGET_NUM):
+def generate_synthetic_features(X, n_samples, method='bootstrap', random_state=1234):
     """generate_synthetic_features
 
     Generate a synthetic dataset based on the empirical distribution
@@ -139,24 +150,24 @@ def generate_synthetic_features(X, method='bootstrap', random_state=1234, n_samp
         The synthetic dataset.
     """
     random_state = check_random_state(random_state)
-    n_features = int(X.shape[1])
+    n_features = len(X[0])
     # synth_X = np.empty_like(X)
     synth_X = np.zeros(shape=(n_samples, n_features))
     for column in range(n_features):
         # 每次填充一列
         if method == 'bootstrap':
             synth_X[:, column] = bootstrap_sample_column(
-                X[:, column], random_state=random_state)
+                X[:, column], n_samples, random_state=random_state)
         elif method == 'uniform':
             synth_X[:, column] = uniform_sample_column(
-                X[:, column], random_state=random_state)
+                X[:, column], n_samples, random_state=random_state)
         else:
             raise ValueError('method must be either `bootstrap` or `uniform`.')
 
     return synth_X
 
 
-def generate_discriminative_dataset(X, method='bootstrap', random_state=1234, n_samples=TARGET_NUM):
+def generate_discriminative_dataset(X,  n_samples, method='bootstrap', random_state=1234):
     """generate_discriminative_dataset.
 
     Generate a synthetic dataset based on the empirical distribution
@@ -194,11 +205,11 @@ def generate_discriminative_dataset(X, method='bootstrap', random_state=1234, n_
     random_state = check_random_state(random_state)
 
     synth_X = generate_synthetic_features(
-        X, method=method, random_state=random_state)
+        X, n_samples, method=method, random_state=random_state)
     X_ = np.vstack((X, synth_X))
-    y_ = np.concatenate((np.ones(n_samples), np.zeros(n_samples)))
+    y_ = np.concatenate((np.ones(len(X)), np.zeros(len(synth_X))))
 
-    permutation_indices = random_state.permutation(np.arange(X_.shape[0]))
+    permutation_indices = random_state.permutation(np.arange(len(X_)))
     X_ = X_[permutation_indices, :]
     y_ = y_[permutation_indices]
 
@@ -220,21 +231,23 @@ def gen_a_sample(ID, group, pt_nc_cov, pt_nc_img):
     return data
 
 
-if __name__ == "__main__":
-    pt_nc_img, pt_nc_cov, ID, group = utl.get_data(source_data)
-    # pt_nc_all = gen_a_sample(ID, group, pt_nc_cov, pt_nc_img)
-    pt_nc_all = np.hstack((ID, group, pt_nc_cov, pt_nc_img))
-    X, Y = generate_discriminative_dataset(np.array(pt_nc_all))
+def add_label(X, title, dest_file):
 
-    with open(file_name, 'w', newline='') as f:
-        tsv_w = csv.writer(f, delimiter='\t')
-        title = ["ID", "GROUP", "COVAR", "COVAR"]
-        for i in range(0, 20):
-            title.append("ROI")
-
-        tsv_w.writerow(title)
     df = pd.DataFrame(X, columns=title)
-    final_df = df.set_index("ID")
+    if "SET" in title:
+        id_name = "ID"
+    else:
+        id_name = "participant_id"
+    df.index.name = id_name
+    df.to_csv(dest_file, sep='\t')
+    return
 
-    # 保存 dataframe
-    final_df.to_csv(file_name, sep='\t')
+
+
+if __name__ == "__main__":
+    read_data()
+
+    X, Y = generate_discriminative_dataset(
+        np.array(data), EXTRA_DATA_NUM)
+    add_label(X, title1, dest_file1)
+    add_label(X, title2, dest_file2)
