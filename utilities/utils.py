@@ -1,14 +1,13 @@
+from matplotlib import pyplot as plt
+from sklearn.metrics import silhouette_score
+from sklearn.utils import check_random_state
+from sklearn.base import clone
 import os
 import csv
 import sys
 import numpy as np
 from sklearn.metrics import adjusted_rand_score as ARI
 rng = np.random.RandomState(1)
-from sklearn.base import clone
-from sklearn.utils import check_random_state
-from sklearn.metrics import silhouette_score
-from matplotlib import pyplot as plt
-
 
 
 def cluster_stability(X, est, n_iter=10, random_state=None, pt_only=False):
@@ -125,40 +124,57 @@ def clustering(X, est):
     return label
 
 
+def time_bar(progress):
+    sys.stdout.write('\r')
+    prog_int = int(progress*50)
+    sys.stdout.write('\t\t[%s%s] %.2f%%' %
+                     ('='*prog_int, ' '*(50-prog_int), progress*100))
+    sys.stdout.flush()
 
-def eval_K(X, k_min, k_max, filename, est, title, pt_only=False,stride=1,get_k_num=False):
-    
+
+def eval_K(X, k_min, k_max, filename, est, title, pt_only=False, stride=1, get_k_num=False):
+
     silhouette_y = []
     ari_y = []
     stability_y = []
-    k_num_y=[]
+    k_num_y = []
 
-    for k in np.arange(k_min, k_max+1,stride):
+    for k in np.arange(k_min, k_max, stride):
         sk = est(k)
         label = clustering(X, sk)
-        if sk.k_num==1 or sk.k_num==len(X["pt_nc_img"]):
+        if sk.k_num == 1 or sk.k_num == len(X["pt_nc_img"]):
             silhouette_y.append(np.nan)
             ari_y.append(np.nan)
             stability_y.append(np.nan)
             k_num_y.append(1)
             continue
-        #silhouette_score requires more than 1 cluster labels. 
+        # silhouette_score requires more than 1 cluster labels.
         silhouette_y.append(silhouette_score(sk.x_data, label))
         ari_y.append(ARI(label, sk.y_data))
         stability_y.append(cluster_stability(X, sk, pt_only=pt_only))
         k_num_y.append(sk.k_num)
+        time_bar((k-k_min)/(k_max-k_min))
 
-    x = np.arange(k_min, k_max+1, stride)
+    x = np.arange(k_min, k_max, stride)
     plt.title(title)
     plt.xlabel("n_clusters")
     plt.ylabel("ARI,Sihoutte,Stability")
-    si, = plt.plot(x, silhouette_y, label="Silhoutte")
-    ar, = plt.plot(x, ari_y, label="ARI")
-    st, = plt.plot(x, stability_y, label="Stability")
+
     if(get_k_num):
-        k_n,=plt.plot(x,k_num_y,label="K num")
-        plt.legend([st,si,ar,k_n],[["Stability", "Silhouette", "ARI","K num"]])
-    else:
+        plt.subplot(1, 2, 1)
+        si, = plt.plot(x, silhouette_y, label="Silhoutte")
+        ar, = plt.plot(x, ari_y, label="ARI")
+        st, = plt.plot(x, stability_y, label="Stability")
         plt.legend([st, si, ar], ["Stability", "Silhouette", "ARI"])
+
+        plt.subplot(1, 2, 2)
+        k_n, = plt.plot(x, k_num_y, label="K num")
+        plt.legend([k_n], ["K num"])
+    else:
+        si, = plt.plot(x, silhouette_y, label="Silhoutte")
+        ar, = plt.plot(x, ari_y, label="ARI")
+        st, = plt.plot(x, stability_y, label="Stability")
+        plt.legend([st, si, ar], ["Stability", "Silhouette", "ARI"])
+
     plt.savefig(filename)
     plt.clf()
