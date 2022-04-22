@@ -11,25 +11,35 @@ import random
 from sklearn.metrics import silhouette_score
 from matplotlib import pyplot as plt
 import lda
+
+from data_generator import normalization
 cwd_path = os.getcwd()
 
 class LDAClusterer:
     def __init__(self, cluster_num):
-        self.cluster_num = cluster_num
+        self.cluster_num = int(cluster_num)
         self.labels_=[]
         self.x_data=[]
         self.y_data=[]
 
+    def normalization(self,data):
+        _range = np.max(data) - np.min(data)
+        return (data - np.min(data)) / _range
+
+
     def fit(self, X):
         self.x_data = X["pt_nc_img"]
-        self.y_data = X["true_label"]
-        source_flatten = self.x_data.flatten()
-        count_data = Counter(source_flatten)
-        Mx = np.zeros([len(self.x_data), len(count_data)], dtype=int)
+        #self.y_data = X["true_label"]
+        # source_flatten = self.x_data.flatten()
+        # count_data = Counter(source_flatten)
+        # Mx = np.zeros([len(self.x_data), len(count_data)], dtype=int)
+        # for i in range(len(self.x_data)):
+        #     for j in range(len(self.x_data[0])):
+        #         Mx[i][j] = count_data[self.x_data[i][j]]
         for i in range(len(self.x_data)):
-            for j in range(len(self.x_data[0])):
-                Mx[i][j] = count_data[self.x_data[i][j]]
-
+            self.x_data[i]=normalization(self.x_data[i])
+            
+        Mx=(self.x_data*1000).astype(int)
         model = lda.LDA(n_topics=self.cluster_num, n_iter=150, random_state=1)
         A = model.fit_transform(Mx)  # model.fit_transform(X) is also available
 

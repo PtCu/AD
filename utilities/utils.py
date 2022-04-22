@@ -1,5 +1,5 @@
 from matplotlib import pyplot as plt
-from sklearn.metrics import silhouette_score
+from sklearn.metrics import silhouette_score, calinski_harabasz_score, davies_bouldin_score
 from sklearn.utils import check_random_state
 from sklearn.base import clone
 import os
@@ -73,8 +73,8 @@ def read_data(filename, decimals=16):
             sys.exit(1)
         data = np.asarray(data[1:])
 
-        group = (data[:, np.nonzero(header == 'GROUP')
-                      [0]]).astype(int)
+        group = (data[:, np.nonzero(header == 'GROUP')[0]]).astype(int)
+
         feat_img = (data[:, np.nonzero(header == 'ROI')[0]]).astype(np.float)
         if 'COVAR' in header:
             feat_cov = (data[:, np.nonzero(header == 'COVAR')[0]]).astype(
@@ -85,7 +85,7 @@ def read_data(filename, decimals=16):
         if 'SET' in header:
             set = (data[:, np.nonzero(header == 'SET')[0]])
 
-    return feat_cov, np.around(feat_img, decimals=decimals),set, ID, group
+    return feat_cov, np.around(feat_img, decimals=decimals), set, ID, group
 
 
 def write_outputfile(output_file, ID, label, true_label, outcome_file, name):
@@ -113,11 +113,11 @@ def write_outputfile(output_file, ID, label, true_label, outcome_file, name):
 
 
 def get_data(filename, decimals=16):
-    pt_nc_cov, pt_nc_img, set,ID, group = read_data(filename, decimals)
+    pt_nc_cov, pt_nc_img, set, ID, group = read_data(filename, decimals)
 
     # pt_nc_all = np.hstack((pt_nc_cov, pt_nc_img))
 
-    return pt_nc_img, pt_nc_cov, set,ID, group
+    return pt_nc_img, pt_nc_cov, set, ID, group
 
 
 def clustering(X, est):
@@ -134,50 +134,52 @@ def time_bar(progress):
     sys.stdout.flush()
 
 
+def plot_pic(title,filename,x_label,y_label,x,y):
+    plt.title(title)
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
+    plt.plot(x, y)
+    plt.savefig(filename)
+    plt.clf()
+
 def eval_K(X, k_min, k_max, filename, est, title, pt_only=False, stride=1, get_k_num=False):
 
     silhouette_y = []
-    ari_y = []
-    stability_y = []
+    ch_y = []
+    db_y = []
     k_num_y = []
 
     for k in np.arange(k_min, k_max, stride):
         time_bar((k-k_min)/(k_max-k_min))
         sk = est(k)
         label = clustering(X, sk)
-        if sk.k_num == 1 or sk.k_num == len(X["pt_nc_img"]):
-            silhouette_y.append(np.nan)
-            ari_y.append(np.nan)
-            stability_y.append(np.nan)
-            k_num_y.append(1)
-            continue
+        if get_k_num:
+            if sk.k_num == 1 or sk.k_num == len(X["pt_nc_img"]):
+                silhouette_y.append(np.nan)
+                ch_y.append(np.nan)
+                db_y.append(np.nan)
+                k_num_y.append(1)
+                continue
+            k_num_y.append(sk.k_num)
         # silhouette_score requires more than 1 cluster labels.
         silhouette_y.append(silhouette_score(sk.x_data, label))
-        ari_y.append(ARI(label, sk.y_data))
-        stability_y.append(cluster_stability(X, sk, pt_only=pt_only))
-        k_num_y.append(sk.k_num)
-        
+        ch_y.append(calinski_harabasz_score(sk.x_data, label))
+        db_y.append(davies_bouldin_score(sk.x_data, label))
 
     x = np.arange(k_min, k_max, stride)
-    plt.title(title)
-    plt.xlabel("n_clusters")
-    plt.ylabel("ARI,Sihoutte,Stability")
-
+    
+   
     if(get_k_num):
-        plt.subplot(1, 2, 1)
-        si, = plt.plot(x, silhouette_y, label="Silhoutte")
-        ar, = plt.plot(x, ari_y, label="ARI")
-        st, = plt.plot(x, stability_y, label="Stability")
-        plt.legend([st, si, ar], ["Stability", "Silhouette", "ARI"])
+        x_label="α"
+        plot_pic("Number of Clusters",filename+"_k.png",x_label,"Number of Clusters",x,k_num_y)
 
-        plt.subplot(1, 2, 2)
-        k_n, = plt.plot(x, k_num_y, label="K num")
-        plt.legend([k_n], ["K num"])
     else:
-        si, = plt.plot(x, silhouette_y, label="Silhoutte")
-        ar, = plt.plot(x, ari_y, label="ARI")
-        st, = plt.plot(x, stability_y, label="Stability")
-        plt.legend([st, si, ar], ["Stability", "Silhouette", "ARI"])
+       x_label="number of clusters"
+    plot_pic("Silhoutte Score",filename+"_sh.png",x_label,"Silhoutte Score",x,silhouette_y)
 
-    plt.savefig(filename)
-    plt.clf()
+    plot_pic("Calinski Harabasz Score",filename+"_ch.png",x_label,"Calinski Harabasz Score",x,ch_y)
+
+    plot_pic("Davies Bouldin Score",filename+"_db.png",x_label,"Davies Bouldin Score",x,db_y)
+
+
+

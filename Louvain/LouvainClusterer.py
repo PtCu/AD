@@ -24,7 +24,7 @@ class LouvainClusterer:
 
     def fit(self, X):
         self.x_data = X["pt_nc_img"]
-        self.y_data=X["true_label"]
+        #self.y_data=X["true_label"]
         ID=X["pt_ID"].flatten()
 
         G = nx.Graph()

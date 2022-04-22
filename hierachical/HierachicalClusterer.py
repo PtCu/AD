@@ -16,7 +16,7 @@ cwd_path = os.getcwd()
 
 class HierachicalClusterer:
     def __init__(self, cluster_num):
-        self.cluster_num = cluster_num
+        self.cluster_num = int(cluster_num)
         self.labels_ = []
         self.x_data = []
         self.y_data=[]
@@ -26,4 +26,4 @@ class HierachicalClusterer:
         model = cluster.AgglomerativeClustering(self.cluster_num)
         model.fit(self.x_data)
         self.labels_=model.labels_
-        self.y_data=X["true_label"]
+        #self.y_data=X["true_label"]

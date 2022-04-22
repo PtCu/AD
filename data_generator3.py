@@ -50,19 +50,19 @@ def read_data():
                 title2.append("ROI"+str(i+1))
         i = 0
         j = SAMPLE_NUM-1
-        id = 0
         while j < df.shape[1]:
             for r in range(i, j):
                 item = []
                 # SET
-                item.append(session_id)
+                item.append(int(session_id))
                 # GROUP
                 if idx == 0:
-                    item.append(NC_TYPE)
+                    item.append(int(NC_TYPE))
                 else:
-                    item.append(PT_TYPE)
+                    item.append(int(PT_TYPE))
                 for l in range(df.shape[1]):
                     item.append(df.at[r, l])
+
                 data.append(item)
             i += STEP
             j += STEP
@@ -249,5 +249,6 @@ if __name__ == "__main__":
 
     X, Y = generate_discriminative_dataset(
         np.array(data), EXTRA_DATA_NUM)
+
     add_label(X, title1, dest_file1)
     add_label(X, title2, dest_file2)

@@ -19,13 +19,10 @@ class CHIMERAClusterer:
     def __init__(self, cluster_num):
         self.cluster_num = cluster_num
         self.labels_ = []
-        self.x_data=[]
-        self.y_data=[]
+        self.x_data = []
 
     def fit(self, X):
-        self.labels_ = []
-        self.x_data=[]
-        group=X["group"].flatten()
-        self.x_data=X["pt_nc_img"][group!=0]
+        group = X["group"].flatten()
+        self.x_data = X["pt_nc_img"][group != 0]
         self.labels_ = chm.clustering(self.cluster_num, X)
-        self.y_data = X["true_label"]
+   

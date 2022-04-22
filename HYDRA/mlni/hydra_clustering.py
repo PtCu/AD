@@ -62,7 +62,7 @@ def clustering_one_round(feature_tsv, output_dir, k, cv_repetition=1, covariate_
     return label,x,y
 
 
-def clustering(feature_tsv, output_dir, k_min, k_max, cv_repetition, true_label, covariate_tsv=None, cv_strategy='hold_out', save_models=False,
+def clustering(feature_tsv, output_dir, k_min, k_max, cv_repetition, covariate_tsv=None, cv_strategy='hold_out', save_models=False,
                cluster_predefined_c=0.25, class_weight_balanced=True, weight_initialization_type='DPP', num_iteration=50,
                num_consensus=20, tol=1e-8, n_threads=8, verbose=False):
     """
@@ -126,7 +126,7 @@ def clustering(feature_tsv, output_dir, k_min, k_max, cv_repetition, true_label,
 
     print('Starts semi-supervised clustering...')
     # Here, semi-supervised clustering
-    wf_clustering = RB_DualSVM_Subtype(input_data, feature_tsv, split_index, cv_repetition, true_label, k_min, k_max,
+    wf_clustering = RB_DualSVM_Subtype(input_data, feature_tsv, split_index, cv_repetition, k_min, k_max,
                                        os.path.join(output_dir, 'clustering'), balanced=class_weight_balanced,
                                        num_consensus=num_consensus, num_iteration=num_iteration,
                                        tol=tol, predefined_c=cluster_predefined_c,

@@ -28,17 +28,17 @@ K = 2
 
 class KMedianClusterer:
     def __init__(self, cluster_num):
-        self.cluster_num = cluster_num
+        self.cluster_num = int(cluster_num)
         self.x_data =[]
         self.y_data=[]
 
 
     def fit(self,X):
         self.x_data = X["pt_nc_img"]
-        self.points = self.__pick_start_point(self.x_data, self.cluster_num)
+        self.points = self.__pick_start_point(self.x_data, int(self.cluster_num))
         self.labels_=np.zeros(len(self.x_data))
         self.__cluster()
-        self.y_data = X["true_label"]
+        #self.y_data = X["true_label"]
 
     def __cluster(self):
         result = []

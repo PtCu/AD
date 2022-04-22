@@ -429,7 +429,7 @@ def hydra_solver_svm(num_repetition, X, y, k, output_dir, num_consensus, num_ite
     censensus_assignment = np.zeros((y[y == 1].shape[0], num_consensus)) ## only consider the PTs
 
     index_pt = np.where(y == 1)[0]  # index for PTs
-    index_cn = np.where(y == -1)[0]  # index for CNs
+    index_cn = np.where(y != 1 )[0]  # index for CNs
 
     for i in range(num_consensus):
         weight_sample = np.ones((y.shape[0], k)) / k

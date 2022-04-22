@@ -17,14 +17,14 @@ cwd_path = os.getcwd()
 
 class MOEClusterer:
     def __init__(self, cluster_num):
-        self.cluster_num = cluster_num
+        self.cluster_num = int(cluster_num)
         self.labels_ = []
         self.x_data = []
         self.y_data = []
 
     def fit(self, X):
         self.x_data = X["pt_nc_img"]
-        self.y_data = X["true_label"]
+        #self.y_data = X["true_label"]
         rf = rfc.RandomForestEmbedding(
             n_estimators=5000, random_state=10, n_jobs=-1, sparse_output=False)
         leaves = rf.fit_transform(self.x_data)
