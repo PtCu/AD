@@ -37,6 +37,8 @@ synthetic_data1 = cwd_path+"/data/synthetic_data1.csv"
 synthetic_data2 = cwd_path+"/data/synthetic_data2.csv"
 simulated_data2 = cwd_path+"/data/feature.tsv"
 simulated_data1 = cwd_path+"/data/simulated_data1.tsv"
+real_data1 = cwd_path+"/data/real_data1.csv"
+real_data2 = cwd_path+"/data/real_data2.csv"
 
 
 def test_hierachical(data_file, label):
@@ -99,7 +101,7 @@ def test_hydra(data_file, label):
     # true_label = np.append(np.zeros(250), np.ones(250))
 
     HYDRAClustering(data_file, cwd_path+"/"+name+"/output/",
-                    2, 10, 2,label=label, covariate_tsv=None)
+                    2, 10, 2, label=label, covariate_tsv=None)
 
 
 def test_lda(data_file, label):
@@ -164,7 +166,6 @@ def test_Bayesian(data_file, label):
                BayesianClusterer, label, stride=0.1, get_k_num=True)
 
 
-
 def test_louvain(data_file, label):
     name = "Louvain"
     print("test "+name)
@@ -198,25 +199,35 @@ def test_moe(data_file, label):
 
 if __name__ == "__main__":
     # test_moe(synthetic_data1,"synthetic")
-    
+
     # test_nmf(synthetic_data1,"synthetic")
     # test_lda(synthetic_data1,"synthetic")
     # test_urf(synthetic_data1,"synthetic")
     # test_hierachical(synthetic_data1,"synthetic")
     # test_K_medians(synthetic_data1,"synthetic")
-    test_louvain(synthetic_data1,"synthetic")
-   
+    test_louvain(synthetic_data1, "synthetic")
 
     # test_moe(simulated_data1,"simulated")
-    
+
     # test_nmf(simulated_data1,"simulated")
     # test_lda(simulated_data1,"simulated")
     # test_urf(simulated_data1,"simulated")
     # test_hierachical(simulated_data1,"simulated")
     # test_K_medians(simulated_data1,"simulated")
-    test_louvain(simulated_data1,"simulated")
+    test_louvain(simulated_data1, "simulated")
     # test_chimera(simulated_data1,"simulated")
     # test_chimera(synthetic_data1,"synthetic")
-    test_hydra(synthetic_data2,"synthetic")
-    test_hydra(simulated_data2,"simulated")
-    # test_Bayesian()
+    test_hydra(synthetic_data2, "synthetic")
+    test_hydra(simulated_data2, "simulated")
+
+    test_moe(real_data1, "real")
+
+    test_nmf(real_data1, "real")
+    test_lda(real_data1, "real")
+    test_urf(real_data1, "real")
+    test_hierachical(real_data1, "real")
+    test_K_medians(real_data1, "real")
+    test_louvain(real_data1, "real")
+    test_chimera(real_data1, "real")
+    test_chimera(real_data1, "real")
+    test_hydra(real_data2, "real")

@@ -226,7 +226,7 @@ class RB_DualSVM_Subtype(WorkFlow):
     # plt.title(title)
         plt.xlabel("K")
         plt.ylabel("Score")
-        x_range = np.arange(self._k_min, self._k_max, dtype=int)
+        x_range = np.arange(self._k_min, self._k_max+1, dtype=int)
 
         si, = plt.plot(x_range, silhouette_y, label="Silhoutte score")
         ar, = plt.plot(x_range, ch_y, label="CH score")
