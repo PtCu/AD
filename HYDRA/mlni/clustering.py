@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import pandas as pd
-from sklearn.metrics import silhouette_samples,calinski_harabasz_score,davies_bouldin_score
+from sklearn.metrics import silhouette_samples, calinski_harabasz_score, davies_bouldin_score
 from HYDRA.mlni.utils import consensus_clustering, cv_cluster_stability, hydra_solver_svm, time_bar, cluster_stability
 from HYDRA.mlni.base import WorkFlow
 from sklearn.metrics import silhouette_score
@@ -27,7 +27,7 @@ class RB_DualSVM_Subtype(WorkFlow):
     The main class to run MLNI with repeated holdout CV for clustering.
     """
 
-    def __init__(self, input, feature_tsv, split_index, cv_repetition, k_min, k_max, output_dir, balanced=True,
+    def __init__(self, input, feature_tsv, split_index, cv_repetition, k_min, k_max, output_dir, label, balanced=True,
                  n_iterations=100, test_size=0.2, num_consensus=20, num_iteration=50, tol=1e-6, predefined_c=None,
                  weight_initialization_type='DPP', n_threads=8, save_models=False, verbose=True):
 
@@ -50,7 +50,7 @@ class RB_DualSVM_Subtype(WorkFlow):
         self._n_threads = n_threads
         self._save_models = save_models
         self._verbose = verbose
-
+        self._label = label
 
     def run_one_round(self):
         x = self._input.get_x()
@@ -158,8 +158,7 @@ class RB_DualSVM_Subtype(WorkFlow):
                 scores.append(ARI(l[in_both], k[in_both]))
         return np.mean(scores)
 
-
-    def plot_pic(self,title,filename,x_label,y_label,x,y):
+    def plot_pic(self, title, filename, x_label, y_label, x, y):
         plt.title(title)
         plt.xlabel(x_label)
         plt.ylabel(y_label)
@@ -177,7 +176,7 @@ class RB_DualSVM_Subtype(WorkFlow):
         db_y = []
         # labels=[]
         # indices=[]
-        #stability_y=[]
+        # stability_y=[]
         for i in range(self._cv_repetition):
             time_bar(i, self._cv_repetition)
             print()
@@ -203,7 +202,7 @@ class RB_DualSVM_Subtype(WorkFlow):
         print('Estimating clustering stability...\n')
         # for the adjusted rand index, only consider the PT results
         adjusted_rand_index_results = np.zeros(self._k_max - self._k_min + 1)
- 
+
         # index_pt = np.where(y == 1)[0]  # index for PTs
         for m in range(self._k_max - self._k_min + 1):
             # 此时的result保存了多轮训练的结果. result[i]为第i轮训练的结果
@@ -214,8 +213,8 @@ class RB_DualSVM_Subtype(WorkFlow):
             # # saving each k result into the final adjusted_rand_index_results
             # adjusted_rand_index_results[m] = adjusted_rand_index_result
             silhouette_y.append(silhouette_score(x, result[:, 0]))
-            ch_y.append(calinski_harabasz_score(x,result[:,0]))
-            db_y.append(davies_bouldin_score(x,result[:,0]))
+            ch_y.append(calinski_harabasz_score(x, result[:, 0]))
+            db_y.append(davies_bouldin_score(x, result[:, 0]))
             # stability_score=[]
             # for l, i in zip(labels, indices):
             #     for k, j in zip(labels, indices):
@@ -224,14 +223,27 @@ class RB_DualSVM_Subtype(WorkFlow):
             #         stability_score.append(
             #             ARI(result[in_both][:,0], result[in_both][:,1]))
             # stability_y.append(np.mean(stability_score))
+    # plt.title(title)
+        plt.xlabel("K")
+        plt.ylabel("Score")
+        x_range = np.arange(self._k_min, self._k_max, dtype=int)
 
-        x_range = np.arange(self._k_min, self._k_max+1, dtype=int)
-        plot_pic("Silhoutte Score",self._output_dir+"HYDRA_sh.png","number of clusters","Silhoutte Score",x_range,silhouette_y)
+        si, = plt.plot(x_range, silhouette_y, label="Silhoutte score")
+        ar, = plt.plot(x_range, ch_y, label="CH score")
+        st, = plt.plot(x_range, db_y, label="DB score")
+        plt.legend([st, si, ar], ["DB score", "Silhoutte score", "CH score"])
 
-        plot_pic("Calinski Harabasz Score",self._output_dir+"HYDRA_ch.png","number of clusters","Calinski Harabasz Score",x_range,ch_y)
+        plt.savefig(self._output_dir+"/HYDRA_"+self._label+".png")
+        plt.clf()
 
-        plot_pic("Davies Bouldin Score",self._output_dir+"HYDRA_db.png","number of clusters","Davies Bouldin Score",x_range,db_y)
+        # plot_pic("Silhoutte Score", self._output_dir+"/HYDRA_"+self._label +
+        #          "sh.png", "number of clusters", "Silhoutte Score", x_range, silhouette_y)
 
+        # plot_pic("Calinski Harabasz Score", self._output_dir+"/HYDRA_"+self._label +
+        #          "ch.png", "number of clusters", "Calinski Harabasz Score", x_range, ch_y)
+
+        # plot_pic("Davies Bouldin Score", self._output_dir+"/HYDRA_"+self._label +
+        #          "db.png", "number of clusters", "Davies Bouldin Score", x_range, db_y)
 
         # print('Computing the final consensus group membership...\n')
         # final_assignment_ks = -np.ones((self._input.get_y_raw().shape[0], self._k_max - self._k_min + 1)).astype(int)

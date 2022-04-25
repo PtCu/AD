@@ -34,16 +34,17 @@ sys.path.append(os.getcwd())
 cwd_path = os.getcwd()
 
 synthetic_data1 = cwd_path+"/data/synthetic_data1.csv"
-synthetic_data2 = cwd_path+"/data/feature.tsv"
-simulated_cov = cwd_path+"/data/feature.tsv"
+synthetic_data2 = cwd_path+"/data/synthetic_data2.csv"
+simulated_data2 = cwd_path+"/data/feature.tsv"
+simulated_data1 = cwd_path+"/data/simulated_data1.tsv"
 
 
-def test_hierachical():
+def test_hierachical(data_file, label):
     name = "Hierachical"
     print("test "+name)
 
     pt_nc_img, pt_nc_cov, set, ID, group = utl.get_data(
-        synthetic_data1)
+        data_file)
     X = {}
     X["pt_nc_img"] = pt_nc_img
     X["pt_nc_cov"] = pt_nc_cov
@@ -51,15 +52,15 @@ def test_hierachical():
     X["group"] = group
 
     utl.eval_K(X, 2, 10, cwd_path+"/"+name+"/output/"+name,
-               HierachicalClusterer, name)
+               HierachicalClusterer, title=label)
 
 
-def test_K_medians():
+def test_K_medians(data_file, label):
     name = "Kmedians"
     print("test "+name)
 
     pt_nc_img, pt_nc_cov, set, ID, group = utl.get_data(
-        synthetic_data1)
+        data_file)
     X = {}
     X["pt_nc_img"] = pt_nc_img
     X["pt_nc_cov"] = pt_nc_cov
@@ -67,15 +68,15 @@ def test_K_medians():
     X["group"] = group
 
     utl.eval_K(X, 2, 10, cwd_path+"/"+name+"/output/"+name,
-               KMedianClusterer, name)
+               KMedianClusterer, title=label)
 
 
-def test_chimera():
+def test_chimera(data_file, label):
     name = "CHIMERA"
     print("test "+name)
 
     pt_nc_img, pt_nc_cov, set, ID, group = utl.get_data(
-        synthetic_data1)
+        data_file)
     X = {}
     X["pt_nc_img"] = pt_nc_img
     X["pt_nc_cov"] = pt_nc_cov
@@ -83,10 +84,10 @@ def test_chimera():
     X["group"] = group
 
     utl.eval_K(X, 2, 10, cwd_path+"/"+name+"/output/"+name,
-               CHIMERAClusterer, name, pt_only=True)
+               CHIMERAClusterer, title=label)
 
 
-def test_hydra():
+def test_hydra(data_file, label):
     name = "HYDRA"
     print("test "+name)
     # X = {}
@@ -97,30 +98,30 @@ def test_hydra():
     #            HYDRAClusterer, name)
     # true_label = np.append(np.zeros(250), np.ones(250))
 
-    HYDRAClustering(synthetic_data2, cwd_path+"/"+name+"/output/",
-                    2, 10, 2, covariate_tsv=None)
+    HYDRAClustering(data_file, cwd_path+"/"+name+"/output/",
+                    2, 10, 2,label=label, covariate_tsv=None)
 
 
-def test_lda():
+def test_lda(data_file, label):
     name = "LDA"
     print("test "+name)
     pt_nc_img, pt_nc_cov, set, ID, group = utl.get_data(
-        synthetic_data1, decimals=3)
+        data_file, decimals=3)
     X = {}
     X["pt_nc_img"] = pt_nc_img
     X["pt_nc_cov"] = pt_nc_cov
     X["pt_ID"] = ID
     X["group"] = group
     utl.eval_K(X, 2, 10, cwd_path+"/"+name+"/output/"+name,
-               LDAClusterer, name)
+               LDAClusterer, label)
 
 
-def test_nmf():
+def test_nmf(data_file, label):
     name = "NMF"
     print("test "+name)
 
     pt_nc_img, pt_nc_cov, set, ID, group = utl.get_data(
-        synthetic_data1, decimals=3)
+        data_file, decimals=3)
     X = {}
     X["pt_nc_img"] = pt_nc_img
     X["pt_nc_cov"] = pt_nc_cov
@@ -128,15 +129,15 @@ def test_nmf():
     X["group"] = group
 
     utl.eval_K(X, 2, 10, cwd_path+"/"+name+"/output/"+name,
-               NMFClusterer, name)
+               NMFClusterer, label)
 
 
-def test_urf():
+def test_urf(data_file, label):
     name = "URF"
     print("test "+name)
 
     pt_nc_img, pt_nc_cov, set, ID, group = utl.get_data(
-        synthetic_data1)
+        data_file)
     X = {}
     X["pt_nc_img"] = pt_nc_img
     X["pt_nc_cov"] = pt_nc_cov
@@ -144,15 +145,15 @@ def test_urf():
     X["group"] = group
 
     utl.eval_K(X, 2, 10, cwd_path+"/"+name+"/output/"+name,
-               URFClusterer, name)
+               URFClusterer, label)
 
 
-def test_Bayesian():
+def test_Bayesian(data_file, label):
     name = "Bayesian"
     print("test "+name)
 
     pt_nc_img, pt_nc_cov, set, ID, group = utl.get_data(
-        synthetic_data1)
+        data_file)
     X = {}
     X["group"] = group
     X["pt_nc_img"] = pt_nc_img
@@ -160,16 +161,15 @@ def test_Bayesian():
     X["pt_ID"] = ID
 
     utl.eval_K(X, 0.1, 0.5, cwd_path+"/"+name+"/output/"+name,
-               BayesianClusterer, name, stride=0.1, get_k_num=True)
-
-    return
+               BayesianClusterer, label, stride=0.1, get_k_num=True)
 
 
-def test_louvain():
+
+def test_louvain(data_file, label):
     name = "Louvain"
     print("test "+name)
     pt_nc_img, pt_nc_cov, set, ID, group = utl.get_data(
-        synthetic_data1, decimals=3)
+        data_file, decimals=3)
     X = {}
     X["group"] = group
     X["pt_nc_img"] = pt_nc_img
@@ -177,15 +177,15 @@ def test_louvain():
     X["pt_ID"] = ID
 
     utl.eval_K(X, 0.8, 0.88, cwd_path+"/"+name+"/output/"+name,
-               LouvainClusterer, name, stride=0.005, get_k_num=True)
+               LouvainClusterer, label, stride=0.005, get_k_num=True)
 
 
-def test_moe():
+def test_moe(data_file, label):
     name = "MOE"
     print("test "+name)
 
     pt_nc_img, pt_nc_cov, set, ID, group = utl.get_data(
-        synthetic_data1)
+        data_file)
     X = {}
     X["pt_nc_img"] = pt_nc_img
     X["pt_nc_cov"] = pt_nc_cov
@@ -193,17 +193,30 @@ def test_moe():
     X["group"] = group
 
     utl.eval_K(X, 2, 10, cwd_path+"/"+name+"/output/"+name,
-               MOEClusterer, name)
+               MOEClusterer, label)
 
 
 if __name__ == "__main__":
-    # test_moe()
-    # test_chimera()
-    test_nmf()
-    test_lda()
-    # test_urf()
-    # test_hierachical()
-    # test_K_medians()
-    # test_louvain()
-    #test_hydra()
+    # test_moe(synthetic_data1,"synthetic")
+    
+    # test_nmf(synthetic_data1,"synthetic")
+    # test_lda(synthetic_data1,"synthetic")
+    # test_urf(synthetic_data1,"synthetic")
+    # test_hierachical(synthetic_data1,"synthetic")
+    # test_K_medians(synthetic_data1,"synthetic")
+    test_louvain(synthetic_data1,"synthetic")
+   
+
+    # test_moe(simulated_data1,"simulated")
+    
+    # test_nmf(simulated_data1,"simulated")
+    # test_lda(simulated_data1,"simulated")
+    # test_urf(simulated_data1,"simulated")
+    # test_hierachical(simulated_data1,"simulated")
+    # test_K_medians(simulated_data1,"simulated")
+    test_louvain(simulated_data1,"simulated")
+    # test_chimera(simulated_data1,"simulated")
+    # test_chimera(synthetic_data1,"synthetic")
+    test_hydra(synthetic_data2,"synthetic")
+    test_hydra(simulated_data2,"simulated")
     # test_Bayesian()

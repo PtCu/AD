@@ -134,16 +134,31 @@ def time_bar(progress):
     sys.stdout.flush()
 
 
-def plot_pic(title,filename,x_label,y_label,x,y):
-    plt.title(title)
+def normalization(data):
+    data = np.array(data)
+    _range = np.max(abs(data))
+    return data / _range
+
+
+SMALL_SIZE = 8
+MEDIUM_SIZE = 10
+BIGGER_SIZE = 15
+
+
+def plot_pic(title, filename, x_label, y_label, x, y):
+    plt.rc('font', size=BIGGER_SIZE)          # controls default text sizes
+    plt.rc('xtick', labelsize=MEDIUM_SIZE)    # fontsize of the tick labels
+    plt.rc('ytick', labelsize=MEDIUM_SIZE)    # fontsize of the tick labels
+    # plt.title(title)
+    y = normalization(np.array(y))
     plt.xlabel(x_label)
     plt.ylabel(y_label)
     plt.plot(x, y)
     plt.savefig(filename)
     plt.clf()
 
-def eval_K(X, k_min, k_max, filename, est, title, pt_only=False, stride=1, get_k_num=False):
 
+def eval_K(X, k_min, k_max, filename, est, title, stride=1, get_k_num=False):
     silhouette_y = []
     ch_y = []
     db_y = []
@@ -155,10 +170,10 @@ def eval_K(X, k_min, k_max, filename, est, title, pt_only=False, stride=1, get_k
         label = clustering(X, sk)
         if get_k_num:
             if sk.k_num == 1 or sk.k_num == len(X["pt_nc_img"]):
-                silhouette_y.append(np.nan)
-                ch_y.append(np.nan)
-                db_y.append(np.nan)
-                k_num_y.append(1)
+                # silhouette_y.append(np.nan)
+                # ch_y.append(np.nan)
+                # db_y.append(np.nan)
+                # k_num_y.append(1)
                 continue
             k_num_y.append(sk.k_num)
         # silhouette_score requires more than 1 cluster labels.
@@ -167,19 +182,39 @@ def eval_K(X, k_min, k_max, filename, est, title, pt_only=False, stride=1, get_k
         db_y.append(davies_bouldin_score(sk.x_data, label))
 
     x = np.arange(k_min, k_max, stride)
-    
-   
+    silhouette_y = normalization(silhouette_y)
+    ch_y = normalization(ch_y)
+    db_y = normalization(db_y)
+
+    # plt.title(title)
+    plt.xlabel("K")
+    plt.ylabel("Score")
+
     if(get_k_num):
-        x_label="α"
-        plot_pic("Number of Clusters",filename+"_k.png",x_label,"Number of Clusters",x,k_num_y)
+        order = np.argsort(k_num_y)
+        x = np.array(k_num_y)[order]
+        silhouette_y = np.array(silhouette_y)[order]
+        ch_y = np.array(ch_y)[order]
+        db_y = np.array(db_y)[order]
+        # x_label = "α"
+        # plot_pic("Number of Clusters", filename+title+"_k.png",
+        #          x_label, "Number of Clusters", x, k_num_y)
 
-    else:
-       x_label="number of clusters"
-    plot_pic("Silhoutte Score",filename+"_sh.png",x_label,"Silhoutte Score",x,silhouette_y)
+    # else:
+    #     x_label = "number of clusters"
 
-    plot_pic("Calinski Harabasz Score",filename+"_ch.png",x_label,"Calinski Harabasz Score",x,ch_y)
+    si, = plt.plot(x, silhouette_y, label="Silhoutte score")
+    ar, = plt.plot(x, ch_y, label="CH score")
+    st, = plt.plot(x, db_y, label="DB score")
+    plt.legend([st, si, ar], ["DB score", "Silhoutte score", "CH score"])
 
-    plot_pic("Davies Bouldin Score",filename+"_db.png",x_label,"Davies Bouldin Score",x,db_y)
+    plt.savefig(filename+"_"+title+".png")
+    plt.clf()
+    # plot_pic("Silhoutte Score", filename+title+"_sh.png",
+    #          x_label, "Silhoutte Score", x, silhouette_y)
 
+    # plot_pic("Calinski Harabasz Score", filename+title+"_ch.png",
+    #          x_label, "Calinski Harabasz Score", x, ch_y)
 
-
+    # plot_pic("Davies Bouldin Score", filename+title+"_db.png",
+    #          x_label, "Davies Bouldin Score", x, db_y)
