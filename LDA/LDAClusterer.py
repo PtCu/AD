@@ -6,12 +6,13 @@ import sys
 import csv
 from sklearn.metrics import adjusted_rand_score as ARI
 import numpy as np
-from sklearn import cluster
+
 import random
 from sklearn.metrics import silhouette_score
 from matplotlib import pyplot as plt
 import lda
-
+import URF.forest_cluster as rfc
+from sklearn import cluster, manifold,decomposition
 from data_generator import normalization
 cwd_path = os.getcwd()
 
@@ -36,14 +37,15 @@ class LDAClusterer:
         # for i in range(len(self.x_data)):
         #     for j in range(len(self.x_data[0])):
         #         Mx[i][j] = count_data[self.x_data[i][j]]
-        for i in range(len(self.x_data)):
-            self.x_data[i]=normalization(self.x_data[i])
+        x_t=decomposition.PCA(n_components=20).fit_transform(self.x_data)
+        for i in range(len(x_t)):
+            x_t[i]=normalization(x_t[i])
             
-        Mx=(self.x_data*1000).astype(int)
+        Mx=(x_t*1000).astype(int)
         model = lda.LDA(n_topics=self.cluster_num, n_iter=150, random_state=1)
         A = model.fit_transform(Mx)  # model.fit_transform(X) is also available
 
-        self.labels_ = np.zeros(len(self.x_data), dtype=int)
+        self.labels_ = np.zeros(len(x_t), dtype=int)
 
         for i in range(len(A)):
             subtype = 0

@@ -59,46 +59,54 @@ def make_cv_partition(diagnosis, cv_strategy, output_dir, cv_repetition, seed=No
         if cv_strategy == 'k_fold':
             splits_indices_pickle = os.path.join(output_dir, 'data_split_stratified_' + str(cv_repetition) + '-fold.pkl')
             ## try to see if the shuffle has been done
-            if os.path.isfile(splits_indices_pickle):
-                splits_indices = pickle.load(open(splits_indices_pickle, 'rb'))
-            else:
-                splits = StratifiedKFold(n_splits=cv_repetition, random_state=seed)
-                splits_indices = list(splits.split(np.zeros(len(y)), y))
+            # if os.path.isfile(splits_indices_pickle):
+            #     splits_indices = pickle.load(open(splits_indices_pickle, 'rb'))
+            # else:
+            #     splits = StratifiedKFold(n_splits=cv_repetition, random_state=seed)
+            #     splits_indices = list(splits.split(np.zeros(len(y)), y))
+            splits = StratifiedKFold(n_splits=cv_repetition, random_state=seed)
+            splits_indices = list(splits.split(np.zeros(len(y)), y))
         elif cv_strategy == 'hold_out':
             splits_indices_pickle = os.path.join(output_dir, 'data_split_stratified_' + str(cv_repetition) + '-holdout.pkl')
             ## try to see if the shuffle has been done
-            if os.path.isfile(splits_indices_pickle):
-                splits_indices = pickle.load(open(splits_indices_pickle, 'rb'))
-            else:
-                splits = StratifiedShuffleSplit(n_splits=cv_repetition, test_size=0.2, random_state=seed)
-                splits_indices = list(splits.split(np.zeros(len(y)), y))
+            # if os.path.isfile(splits_indices_pickle):
+            #     splits_indices = pickle.load(open(splits_indices_pickle, 'rb'))
+            # else:
+            #     splits = StratifiedShuffleSplit(n_splits=cv_repetition, test_size=0.2, random_state=seed)
+            #     splits_indices = list(splits.split(np.zeros(len(y)), y))
+            splits = StratifiedShuffleSplit(n_splits=cv_repetition, test_size=0.2, random_state=seed)
+            splits_indices = list(splits.split(np.zeros(len(y)), y))
         else:
             raise Exception("this cross validation strategy has not been implemented!")
     elif len(unique) == 1:
         raise Exception("Diagnosis cannot be the same for all participants...")
     else: ### CV for regression, no need to be stratified
         if cv_strategy == 'k_fold':
-            splits_indices_pickle = os.path.join(output_dir, 'data_split_' + str(cv_repetition) + '-fold.pkl')
+            # splits_indices_pickle = os.path.join(output_dir, 'data_split_' + str(cv_repetition) + '-fold.pkl')
 
             ## try to see if the shuffle has been done
-            if os.path.isfile(splits_indices_pickle):
-                splits_indices = pickle.load(open(splits_indices_pickle, 'rb'))
-            else:
-                splits = KFold(n_splits=cv_repetition, random_state=seed)
-                splits_indices = list(splits.split(np.zeros(len(y)), y))
+            # if os.path.isfile(splits_indices_pickle):
+            #     splits_indices = pickle.load(open(splits_indices_pickle, 'rb'))
+            # else:
+            #     splits = KFold(n_splits=cv_repetition, random_state=seed)
+            #     splits_indices = list(splits.split(np.zeros(len(y)), y))
+            splits = KFold(n_splits=cv_repetition, random_state=seed)
+            splits_indices = list(splits.split(np.zeros(len(y)), y))
         elif cv_strategy == 'hold_out':
-            splits_indices_pickle = os.path.join(output_dir, 'data_split_' + str(cv_repetition) + '-holdout.pkl')
-            ## try to see if the shuffle has been done
-            if os.path.isfile(splits_indices_pickle):
-                splits_indices = pickle.load(open(splits_indices_pickle, 'rb'))
-            else:
-                splits = ShuffleSplit(n_splits=cv_repetition, test_size=0.2, random_state=seed)
-                splits_indices = list(splits.split(np.zeros(len(y)), y))
+            # splits_indices_pickle = os.path.join(output_dir, 'data_split_' + str(cv_repetition) + '-holdout.pkl')
+            # ## try to see if the shuffle has been done
+            # if os.path.isfile(splits_indices_pickle):
+            #     splits_indices = pickle.load(open(splits_indices_pickle, 'rb'))
+            # else:
+            #     splits = ShuffleSplit(n_splits=cv_repetition, test_size=0.2, random_state=seed)
+            #     splits_indices = list(splits.split(np.zeros(len(y)), y))
+            splits = ShuffleSplit(n_splits=cv_repetition, test_size=0.2, random_state=seed)
+            splits_indices = list(splits.split(np.zeros(len(y)), y))
         else:
             raise Exception("this cross validation strategy has not been implemented!")
 
-    with open(splits_indices_pickle, 'wb') as s:
-        pickle.dump(splits_indices, s)
+    # with open(splits_indices_pickle, 'wb') as s:
+    #     pickle.dump(splits_indices, s)
 
     return splits_indices, splits_indices_pickle
 

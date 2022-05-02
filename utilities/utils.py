@@ -131,6 +131,7 @@ def time_bar(progress):
     prog_int = int(progress*50)
     sys.stdout.write('\t\t[%s%s] %.2f%%' %
                      ('='*prog_int, ' '*(50-prog_int), progress*100))
+    sys.stdout.write('\r')
     sys.stdout.flush()
 
 
@@ -156,6 +157,14 @@ def plot_pic(title, filename, x_label, y_label, x, y):
     plt.plot(x, y)
     plt.savefig(filename)
     plt.clf()
+
+def helper(x,y):
+    x_=[]
+    for i in range(len(x)):
+        if x[i] not in x_:
+            x_.append(i)
+    y=y[np.array(x_)]
+    return y    
 
 
 def eval_K(X, k_min, k_max, filename, est, title, stride=1, get_k_num=False):
@@ -196,6 +205,9 @@ def eval_K(X, k_min, k_max, filename, est, title, stride=1, get_k_num=False):
         silhouette_y = np.array(silhouette_y)[order]
         ch_y = np.array(ch_y)[order]
         db_y = np.array(db_y)[order]
+        silhouette_y=helper(x,silhouette_y)
+        ch_y=helper(x,ch_y)
+        db_y=helper(x,db_y)
         # x_label = "α"
         # plot_pic("Number of Clusters", filename+title+"_k.png",
         #          x_label, "Number of Clusters", x, k_num_y)
@@ -203,9 +215,9 @@ def eval_K(X, k_min, k_max, filename, est, title, stride=1, get_k_num=False):
     # else:
     #     x_label = "number of clusters"
 
-    si, = plt.plot(x, silhouette_y, label="Silhoutte score")
-    ar, = plt.plot(x, ch_y, label="CH score")
-    st, = plt.plot(x, db_y, label="DB score")
+    si, = plt.plot(x, silhouette_y, label="Silhoutte score",linestyle="solid")
+    ar, = plt.plot(x, ch_y, label="CH score",linestyle="dashdot")
+    st, = plt.plot(x, db_y, label="DB score",linestyle="dashed")
     plt.legend([st, si, ar], ["DB score", "Silhoutte score", "CH score"])
 
     plt.savefig(filename+"_"+title+".png")

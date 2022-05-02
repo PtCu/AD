@@ -1,8 +1,0 @@
-N= 5 without covariate :
-ARI: -0.001426242397464892
-N= 50 without covariate :
-ARI: -0.001982696449822522
-N= 500 without covariate :
-ARI: 0.011475019711645953
-N= 5000 without covariate :
-ARI: -0.0019881047209422895

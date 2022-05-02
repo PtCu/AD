@@ -7,7 +7,7 @@ from HYDRA.mlni.base import WorkFlow
 from sklearn.metrics import silhouette_score
 from matplotlib import pyplot as plt
 from sklearn.metrics import adjusted_rand_score as ARI
-
+from sklearn import decomposition
 from utilities.utils import plot_pic
 rng = np.random.RandomState(1)
 __author__ = "Junhao Wen"
@@ -29,7 +29,7 @@ class RB_DualSVM_Subtype(WorkFlow):
 
     def __init__(self, input, feature_tsv, split_index, cv_repetition, k_min, k_max, output_dir, label, balanced=True,
                  n_iterations=100, test_size=0.2, num_consensus=20, num_iteration=50, tol=1e-6, predefined_c=None,
-                 weight_initialization_type='DPP', n_threads=8, save_models=False, verbose=True):
+                 weight_initialization_type='DPP', n_threads=8, save_models=False, verbose=False):
 
         self._input = input
         self._feature_tsv = feature_tsv
@@ -55,7 +55,6 @@ class RB_DualSVM_Subtype(WorkFlow):
     def run_one_round(self):
         x = self._input.get_x()
         y = self._input.get_y_raw()
-        silhouette_y = []
         data_label_folds_ks = np.zeros(
             (y.shape[0], self._k_max - self._k_min + 1)).astype(int)
 
@@ -166,6 +165,11 @@ class RB_DualSVM_Subtype(WorkFlow):
         plt.savefig(filename)
         plt.clf()
 
+    def normalization(self,data):
+        data = np.array(data)
+        _range = np.max(abs(data))
+        return data / _range
+
     def run(self):
         x = self._input.get_x()
         y = self._input.get_y_raw()
@@ -177,6 +181,7 @@ class RB_DualSVM_Subtype(WorkFlow):
         # labels=[]
         # indices=[]
         # stability_y=[]
+        x=decomposition.PCA(n_components=20).fit_transform(x)
         for i in range(self._cv_repetition):
             time_bar(i, self._cv_repetition)
             print()
@@ -199,9 +204,9 @@ class RB_DualSVM_Subtype(WorkFlow):
                 # labels.append(training_final_prediction)
                 # indices.append(self._split_index[i][0])
 
-        print('Estimating clustering stability...\n')
+        #print('Estimating clustering stability...\n')
         # for the adjusted rand index, only consider the PT results
-        adjusted_rand_index_results = np.zeros(self._k_max - self._k_min + 1)
+        # adjusted_rand_index_results = np.zeros(self._k_max - self._k_min + 1)
 
         # index_pt = np.where(y == 1)[0]  # index for PTs
         for m in range(self._k_max - self._k_min + 1):
@@ -227,10 +232,13 @@ class RB_DualSVM_Subtype(WorkFlow):
         plt.xlabel("K")
         plt.ylabel("Score")
         x_range = np.arange(self._k_min, self._k_max+1, dtype=int)
+        silhouette_y = self.normalization(silhouette_y)
+        ch_y = self.normalization(ch_y)
+        db_y = self.normalization(db_y)  
 
-        si, = plt.plot(x_range, silhouette_y, label="Silhoutte score")
-        ar, = plt.plot(x_range, ch_y, label="CH score")
-        st, = plt.plot(x_range, db_y, label="DB score")
+        si, = plt.plot(x_range, silhouette_y, label="Silhoutte score",linestyle="solid")
+        ar, = plt.plot(x_range, ch_y, label="CH score",linestyle="dashdot")
+        st, = plt.plot(x_range, db_y, label="DB score",linestyle="dashed")
         plt.legend([st, si, ar], ["DB score", "Silhoutte score", "CH score"])
 
         plt.savefig(self._output_dir+"/HYDRA_"+self._label+".png")

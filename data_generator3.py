@@ -22,14 +22,15 @@ dest_file1 = os.path.join(data_dir, "synthetic_data1.csv")
 dest_file2 = os.path.join(data_dir, "synthetic_data2.csv")
 data = []
 
-SAMPLE_NUM = 170
-STEP = 50
+SAMPLE_NUM = 100
+STEP = 100
 GROUP_LABEL = 1
 # 正常人标签
 NC_TYPE = 0
 # 病号标签
 PT_TYPE = 1
 
+SIGMA=0.0025
 # title1 = ["ID", "SET", "GROUP"]
 # title2 = ["participant_id", "session_id", "diagnosis"]
 
@@ -50,22 +51,23 @@ def read_data():
                 title2.append("ROI"+str(i+1))
         i = 0
         j = SAMPLE_NUM-1
+        item = []
+        # SET
+        item.append(int(session_id))
+        # GROUP
+        if idx == 0:
+            item.append(int(NC_TYPE))
+        else:
+            item.append(int(PT_TYPE))
         while j < df.shape[1]:
-            for r in range(i, j):
-                item = []
-                # SET
-                item.append(int(session_id))
-                # GROUP
-                if idx == 0:
-                    item.append(int(NC_TYPE))
-                else:
-                    item.append(int(PT_TYPE))
+            for r in range(i, j):   
                 for l in range(df.shape[1]):
                     item.append(df.at[r, l])
-
-                data.append(item)
+                item[-df.shape[1]:] += np.random.normal(0, 0.0025, df.shape[1])
+                
             i += STEP
             j += STEP
+        data.append(item)
 
 
 def bootstrap_sample_column(X, n_samples, random_state=1234):

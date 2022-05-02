@@ -106,21 +106,21 @@ def clustering(feature_tsv, output_dir, k_min, k_max, cv_repetition, label,covar
     # data split
     print('Data split was performed based on validation strategy: %s...\n' % cv_strategy)
     if cv_strategy == "hold_out":
-        # check if data split has been done, if yes, the pickle file is there
-        if os.path.isfile(os.path.join(output_dir, 'data_split_stratified_' + str(cv_repetition) + '-holdout.pkl')):
-            split_index = pickle.load(open(os.path.join(
-                output_dir, 'data_split_stratified_' + str(cv_repetition) + '-holdout.pkl'), 'rb'))
-        else:
-            split_index, _ = make_cv_partition(
-                input_data.get_y(), cv_strategy, output_dir, cv_repetition)
+        # # check if data split has been done, if yes, the pickle file is there
+        # if os.path.isfile(os.path.join(output_dir, 'data_split_stratified_' + str(cv_repetition) + '-holdout.pkl')):
+        #     split_index = pickle.load(open(os.path.join(
+        #         output_dir, 'data_split_stratified_' + str(cv_repetition) + '-holdout.pkl'), 'rb'))
+        # else:
+        split_index, _ = make_cv_partition(
+            input_data.get_y(), cv_strategy, output_dir, cv_repetition)
     elif cv_strategy == "k_fold":
         # check if data split has been done, if yes, the pickle file is there
-        if os.path.isfile(os.path.join(output_dir, 'data_split_stratified_' + str(cv_repetition) + '-fold.pkl')):
-            split_index = pickle.load(open(os.path.join(
-                output_dir, 'data_split_stratified_' + str(cv_repetition) + '-fold.pkl'), 'rb'))
-        else:
-            split_index, _ = make_cv_partition(
-                input_data.get_y(), cv_strategy, output_dir, cv_repetition)
+        # if os.path.isfile(os.path.join(output_dir, 'data_split_stratified_' + str(cv_repetition) + '-fold.pkl')):
+        #     split_index = pickle.load(open(os.path.join(
+        #         output_dir, 'data_split_stratified_' + str(cv_repetition) + '-fold.pkl'), 'rb'))
+        # else:
+        split_index, _ = make_cv_partition(
+            input_data.get_y(), cv_strategy, output_dir, cv_repetition)
 
     print('Data split has been done!\n')
 

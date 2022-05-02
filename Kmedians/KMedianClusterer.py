@@ -35,9 +35,12 @@ class KMedianClusterer:
 
     def fit(self,X):
         self.x_data = X["pt_nc_img"]
-        self.points = self.__pick_start_point(self.x_data, int(self.cluster_num))
-        self.labels_=np.zeros(len(self.x_data))
-        self.__cluster()
+
+        k_means=cluster.KMeans(n_clusters=self.cluster_num).fit(self.x_data)
+        self.labels_=k_means.labels_
+        # self.points = self.__pick_start_point(self.x_data, int(self.cluster_num))
+        # self.labels_=np.zeros(len(self.x_data))
+        # self.__cluster()
         #self.y_data = X["true_label"]
 
     def __cluster(self):

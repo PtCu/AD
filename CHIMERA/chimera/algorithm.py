@@ -83,6 +83,7 @@ def clustering_core(feat_cov, feat_img, ID, group, config, feat_set=None):
             sys.stdout.write('\t\tBest average ARI is %f\n' % (max(ave_ari)))
         label = label_mat[idx, :]
         result = results[idx]
+
     return label
 
 

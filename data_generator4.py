@@ -57,13 +57,13 @@ def read_data():
             # SET
             item.append(int(session_id))
             # GROUP
-            if idx == 0 or idx==1:
+            if idx == 0 or idx == 1:
                 item.append(int(NC_TYPE))
             else:
                 item.append(int(PT_TYPE))
             for j in range(df.shape[1]):
                 item.append(df.at[i, j])
-
+            item[-df.shape[1]:] += np.random.normal(0, 0.0025, df.shape[1])
             data.append(item)
 
 

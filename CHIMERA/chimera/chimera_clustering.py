@@ -6,6 +6,8 @@ import os
 import csv
 import sys
 import numpy as np
+import URF.forest_cluster as rfc
+from sklearn import cluster, manifold,decomposition
 __author__ = "Junhao Wen"
 __copyright__ = "Copyright 2019-2020 The CBICA & SBIA Lab"
 __credits__ = ["Junhao Wen, Aoyan Dong"]
@@ -62,10 +64,11 @@ def clustering(k, X, weight_covariate=-1.0, weight_site=10, lambda_b=10.0,
 
     feat_cov = X["pt_nc_cov"]
     feat_img = X["pt_nc_img"]
+    x_t=decomposition.PCA(n_components=20).fit_transform(feat_img)
     ID = X["pt_ID"]
     group = X["group"].flatten()
     # go into the core function of chimera
-    return clustering_core(feat_cov, feat_img, ID, group, config_arg)
+    return clustering_core(feat_cov, x_t, ID, group, config_arg)
     # return clustering_main(feat_cov,feat_img,ID,group,config_arg)
 
     # return config_arg

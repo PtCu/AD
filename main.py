@@ -101,7 +101,7 @@ def test_hydra(data_file, label):
     # true_label = np.append(np.zeros(250), np.ones(250))
 
     HYDRAClustering(data_file, cwd_path+"/"+name+"/output/",
-                    2, 10, 2, label=label, covariate_tsv=None)
+                    2, 10, 10, label=label, covariate_tsv=None)
 
 
 def test_lda(data_file, label):
@@ -177,8 +177,8 @@ def test_louvain(data_file, label):
     X["pt_nc_cov"] = pt_nc_cov
     X["pt_ID"] = ID
 
-    utl.eval_K(X, 0.8, 0.88, cwd_path+"/"+name+"/output/"+name,
-               LouvainClusterer, label, stride=0.005, get_k_num=True)
+    utl.eval_K(X, 2, 10, cwd_path+"/"+name+"/output/"+name,
+               LouvainClusterer, label, get_k_num=False)
 
 
 def test_moe(data_file, label):
@@ -197,37 +197,49 @@ def test_moe(data_file, label):
                MOEClusterer, label)
 
 
+def test_all(filename, label):
+    test_moe(filename, label)
+    test_nmf(filename, label)
+    test_lda(filename, label)
+    test_urf(filename, label)
+    test_hierachical(filename, label)
+    test_K_medians(filename, label)
+    test_louvain(filename, label)
+    test_chimera(filename, label)
+
+
+K_min = 2
+K_max = 9
+prefix = cwd_path+"/data/clustering"
+source_file1 = []
+source_file2 = []
+for k in range(K_min, K_max):
+    for t in range(120, 151, 10):
+        source_file1.append(prefix+str(k)+"_"+str(t)+"_1.csv")
+        source_file2.append(prefix+str(k)+"_"+str(t)+"_2.csv")
+
+source_file3=[]
+for k in range(K_min, K_max):
+    source_file3.append(prefix+str(k)+"_2.csv")
+
 if __name__ == "__main__":
-    # test_moe(synthetic_data1,"synthetic")
+    # test_all(synthetic_data1,"synthetic")
+    # test_all(simulated_data1,"simulated")
+    # test_all(real_data1,"real")
 
-    # test_nmf(synthetic_data1,"synthetic")
-    # test_lda(synthetic_data1,"synthetic")
-    # test_urf(synthetic_data1,"synthetic")
-    # test_hierachical(synthetic_data1,"synthetic")
-    # test_K_medians(synthetic_data1,"synthetic")
-    test_louvain(synthetic_data1, "synthetic")
+    # test_hydra(real_data2, "real")
+    # test_hydra(synthetic_data2, "synthetic")
+    # test_hydra(simulated_data2, "simulated")
+    # test_louvain(simulated_data1,"simulated")
+    # for i in range(len(source_file1)):
+    #     test_all(source_file1[i],"synthetic_"+str(i+2))
 
-    # test_moe(simulated_data1,"simulated")
+    # for i in range(len(source_file1)):
+    #     test_all(source_file1[i], "synthetic_"+source_file1[i][-11:-4])
 
-    # test_nmf(simulated_data1,"simulated")
-    # test_lda(simulated_data1,"simulated")
-    # test_urf(simulated_data1,"simulated")
-    # test_hierachical(simulated_data1,"simulated")
-    # test_K_medians(simulated_data1,"simulated")
-    test_louvain(simulated_data1, "simulated")
-    # test_chimera(simulated_data1,"simulated")
-    # test_chimera(synthetic_data1,"synthetic")
-    test_hydra(synthetic_data2, "synthetic")
-    test_hydra(simulated_data2, "simulated")
-
-    test_moe(real_data1, "real")
-
-    test_nmf(real_data1, "real")
-    test_lda(real_data1, "real")
-    test_urf(real_data1, "real")
-    test_hierachical(real_data1, "real")
-    test_K_medians(real_data1, "real")
-    test_louvain(real_data1, "real")
-    test_chimera(real_data1, "real")
-    test_chimera(real_data1, "real")
-    test_hydra(real_data2, "real")
+    # for i in range(len(source_file2)):
+    #     test_hydra(source_file2[i],"synthetic_"+source_file2[i][-11:-4])
+    
+    for i in range(len(source_file3)):
+        print("test "+"k= "+str(i+2))
+        test_hydra(source_file3[i],"synthetic_"+str(i+2))
