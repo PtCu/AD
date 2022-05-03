@@ -206,17 +206,17 @@ def test_gmm(data_file, label):
     return utl.get_final_K(X, K_min, K_max, GMMClusterer)
 
 
-def test_all(filename, label):
-    
-    nmf = test_nmf(filename, label)
-    hydra = test_hydra(synthetic_data2, label)
-    gmm = test_gmm(filename, label)
-    lda = test_lda(filename, label)
-    urf = test_urf(filename, label)
-    hierachical = test_hierachical(filename, label)
-    k_medians = test_K_medians(filename, label)
-    spectral = test_spectral(filename, label)
-    chimera = test_chimera(filename, label)
+def test_all(filename1, filename2, label):
+    print("running "+filename1)
+    hydra = test_hydra(filename2, label)
+    nmf = test_nmf(filename1, label)
+    gmm = test_gmm(filename1, label)
+    lda = test_lda(filename1, label)
+    urf = test_urf(filename1, label)
+    hierachical = test_hierachical(filename1, label)
+    k_medians = test_K_medians(filename1, label)
+    spectral = test_spectral(filename1, label)
+    chimera = test_chimera(filename1, label)
 
     with open(output_dir+label+".txt", 'a') as f:
         f.write("label: "+label)
@@ -281,14 +281,14 @@ if __name__ == "__main__":
     # test_louvain(simulated_data1,"simulated")
 
     for i in range(len(source_file1)):
-        print("k= "+str(i+2))
-        test_all(source_file1[i], "synthetic_"+source_file1[i][-11:-4])
+        test_all(source_file1[i], source_file2[i],
+                 "synthetic_"+source_file1[i][-11:-4])
 
     # for i in range(len(source_file2)):
     #     test_hydra(source_file2[i], "synthetic_"+source_file2[i][-11:-4])
 
     for i in range(len(source_file3)):
-        print("test "+"k= "+str(i+2))
+        print("K = "+str(i+2))
         test_all(source_file3[i], "synthetic_"+str(i+2))
 
     # for i in range(len(source_file4)):
