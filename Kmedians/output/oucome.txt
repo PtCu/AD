@@ -1,0 +1,8 @@
+Hierachical with covariate :
+ARI: -0.001595612015552205
+Hierachical without covariate :
+ARI: -0.0018196789995003914
+Hierachical with covariate :
+ARI: -0.001595612015552205
+Hierachical without covariate :
+ARI: -0.0014288163391407002

@@ -12,7 +12,8 @@
 """
 import numpy as np
 from numpy import transpose as Tr
-from .optimization_utils import *
+# from chimera.optimization_utils import *
+from CHIMERA.chimera.optimization_utils import *
 def solve_sigsq(y,yd,ys,tx,xd,xs,P,params,config):
     D,N = y.shape
     d = 0
