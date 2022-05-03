@@ -133,5 +133,6 @@ def clustering(feature_tsv, output_dir, k_min, k_max, cv_repetition, label,covar
                                        weight_initialization_type=weight_initialization_type,
                                        n_threads=n_threads, save_models=save_models, verbose=verbose)
 
-    wf_clustering.run()
+    K_num=wf_clustering.run()
     print('Finish...')
+    return K_num

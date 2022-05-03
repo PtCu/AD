@@ -158,75 +158,96 @@ def plot_pic(title, filename, x_label, y_label, x, y):
     plt.savefig(filename)
     plt.clf()
 
-def helper(x,y):
-    x_=[]
+
+def helper(x, y):
+    x_ = []
     for i in range(len(x)):
         if x[i] not in x_:
             x_.append(i)
-    y=y[np.array(x_)]
-    return y    
+    y = y[np.array(x_)]
+    return y
 
 
-def eval_K(X, k_min, k_max, filename, est, title, stride=1, get_k_num=False):
-    silhouette_y = []
+def get_K_from_three_score(sh_y, ch_y, db_y):
+    sh_y = np.array(sh_y)
+    ch_y = np.array(ch_y)
+    db_y = np.array(db_y)
+    sh_k = np.argmax(sh_y)
+    ch_k = np.argmax(ch_y)
+    db_k = np.argmin(db_y)
+    # 三者都一样
+    if sh_k == ch_k and sh_k == db_k:
+        return sh_k+2
+    # 两个一样
+    elif db_k == ch_k:
+        return db_k+2
+    # 两个一样或都不一样
+    else:
+        return sh_k+2
+
+
+def plot_K(X, k_min, k_max, filename, est, title, stride=1):
+    sh_y = []
     ch_y = []
     db_y = []
-    k_num_y = []
 
     for k in np.arange(k_min, k_max, stride):
         time_bar((k-k_min)/(k_max-k_min))
         sk = est(k)
         label = clustering(X, sk)
-        if get_k_num:
-            if sk.k_num == 1 or sk.k_num == len(X["pt_nc_img"]):
-                # silhouette_y.append(np.nan)
-                # ch_y.append(np.nan)
-                # db_y.append(np.nan)
-                # k_num_y.append(1)
-                continue
-            k_num_y.append(sk.k_num)
-        # silhouette_score requires more than 1 cluster labels.
-        silhouette_y.append(silhouette_score(sk.x_data, label))
-        ch_y.append(calinski_harabasz_score(sk.x_data, label))
-        db_y.append(davies_bouldin_score(sk.x_data, label))
+        try:
+            sh_y.append(silhouette_score(sk.x_data, label))
+        except:
+            sh_y.append(0.0)
+        try:
+            ch_y.append(calinski_harabasz_score(sk.x_data, label))
+        except:
+            ch_y.append(0.0)
+        try:
+            db_y.append(davies_bouldin_score(sk.x_data, label))
+        except:
+            db_y.append(0.0)
 
     x = np.arange(k_min, k_max, stride)
-    silhouette_y = normalization(silhouette_y)
+    sh_y = normalization(sh_y)
     ch_y = normalization(ch_y)
     db_y = normalization(db_y)
 
+    k = get_K_from_three_score(sh_y, ch_y, db_y)
     # plt.title(title)
     plt.xlabel("K")
     plt.ylabel("Score")
 
-    if(get_k_num):
-        order = np.argsort(k_num_y)
-        x = np.array(k_num_y)[order]
-        silhouette_y = np.array(silhouette_y)[order]
-        ch_y = np.array(ch_y)[order]
-        db_y = np.array(db_y)[order]
-        silhouette_y=helper(x,silhouette_y)
-        ch_y=helper(x,ch_y)
-        db_y=helper(x,db_y)
-        # x_label = "α"
-        # plot_pic("Number of Clusters", filename+title+"_k.png",
-        #          x_label, "Number of Clusters", x, k_num_y)
-
-    # else:
-    #     x_label = "number of clusters"
-
-    si, = plt.plot(x, silhouette_y, label="Silhoutte score",linestyle="solid")
-    ar, = plt.plot(x, ch_y, label="CH score",linestyle="dashdot")
-    st, = plt.plot(x, db_y, label="DB score",linestyle="dashed")
+    si, = plt.plot(x, sh_y, label="Silhoutte score", linestyle="solid")
+    ar, = plt.plot(x, ch_y, label="CH score", linestyle="dashdot")
+    st, = plt.plot(x, db_y, label="DB score", linestyle="dashed")
     plt.legend([st, si, ar], ["DB score", "Silhoutte score", "CH score"])
 
     plt.savefig(filename+"_"+title+".png")
     plt.clf()
-    # plot_pic("Silhoutte Score", filename+title+"_sh.png",
-    #          x_label, "Silhoutte Score", x, silhouette_y)
 
-    # plot_pic("Calinski Harabasz Score", filename+title+"_ch.png",
-    #          x_label, "Calinski Harabasz Score", x, ch_y)
 
-    # plot_pic("Davies Bouldin Score", filename+title+"_db.png",
-    #          x_label, "Davies Bouldin Score", x, db_y)
+REPEAT_NUM = 5
+
+
+def get_final_K(X, k_min, k_max, est):
+    K_num=[]
+    for i in range(REPEAT_NUM):
+        sh_y = []
+        ch_y = []
+        db_y = []
+        for k in np.arange(k_min, k_max):
+            time_bar((k-k_min)/(k_max-k_min))
+            sk = est(k)
+            label = clustering(X, sk)
+            sh_y.append(silhouette_score(sk.x_data, label))
+            ch_y.append(calinski_harabasz_score(sk.x_data, label))
+            db_y.append(davies_bouldin_score(sk.x_data, label))
+
+        sh_y = normalization(sh_y)
+        ch_y = normalization(ch_y)
+        db_y = normalization(db_y)
+
+        k = get_K_from_three_score(sh_y, ch_y, db_y)
+        K_num.append(k)
+    return K_num

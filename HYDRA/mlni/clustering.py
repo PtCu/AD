@@ -165,84 +165,106 @@ class RB_DualSVM_Subtype(WorkFlow):
         plt.savefig(filename)
         plt.clf()
 
-    def normalization(self,data):
+    def normalization(self, data):
         data = np.array(data)
         _range = np.max(abs(data))
         return data / _range
 
+    def get_K_from_three_score(self, sh_y, ch_y, db_y):
+        sh_y = np.array(sh_y)
+        ch_y = np.array(ch_y)
+        db_y = np.array(db_y)
+        sh_k = np.argmax(sh_y)
+        ch_k = np.argmax(ch_y)
+        db_k = np.argmin(db_y)
+        # 三者都一样
+        if sh_k == ch_k and sh_k == db_k:
+            return sh_k+2
+        # 两个一样
+        elif db_k == ch_k:
+            return db_k+2
+        # 两个一样或都不一样
+        else:
+            return sh_k+2
+
     def run(self):
-        x = self._input.get_x()
-        y = self._input.get_y_raw()
-        data_label_folds_ks = np.zeros(
-            (y.shape[0], self._cv_repetition, self._k_max - self._k_min + 1)).astype(int)
-        silhouette_y = []
-        ch_y = []
-        db_y = []
-        # labels=[]
-        # indices=[]
-        # stability_y=[]
-        x=decomposition.PCA(n_components=20).fit_transform(x)
-        for i in range(self._cv_repetition):
-            time_bar(i, self._cv_repetition)
-            print()
-            for j in self._k_range_list:
-                if self._verbose:
-                    print('Applying pyHRDRA for finding %d clusters. Repetition: %d / %d...\n' %
-                          (j, i+1, self._cv_repetition))
-                training_final_prediction = hydra_solver_svm(i, x[self._split_index[i][0]], y[self._split_index[i][0]], j, self._output_dir,
-                                                             self._num_consensus, self._num_iteration, self._tol, self._balanced, self._predefined_c,
-                                                             self._weight_initialization_type, self._n_threads, self._save_models, self._verbose)
+        K_num = []
+        for _ in range(0,1):
+            x = self._input.get_x()
+            y = self._input.get_y_raw()
+            data_label_folds_ks = np.zeros(
+                (y.shape[0], self._cv_repetition, self._k_max - self._k_min + 1)).astype(int)
+            sh_y = []
+            ch_y = []
+            db_y = []
+            x = decomposition.PCA(n_components=20).fit_transform(x)
+            for i in range(self._cv_repetition):
+                time_bar(i, self._cv_repetition)
+                print()
+                for j in self._k_range_list:
+                    if self._verbose:
+                        print('Applying pyHRDRA for finding %d clusters. Repetition: %d / %d...\n' %
+                              (j, i+1, self._cv_repetition))
+                    training_final_prediction = hydra_solver_svm(i, x[self._split_index[i][0]], y[self._split_index[i][0]], j, self._output_dir,
+                                                                 self._num_consensus, self._num_iteration, self._tol, self._balanced, self._predefined_c,
+                                                                 self._weight_initialization_type, self._n_threads, self._save_models, self._verbose)
 
-                # change the final prediction's label: test data to be 0, the rest training data will b e updated by the model's prediction
-                data_label_fold = y.copy()
-                # all test data to be 0
-                data_label_fold[self._split_index[i][1]] = 0
-                # assign the training prediction
-                data_label_fold[self._split_index[i]
-                                [0]] = training_final_prediction
-                data_label_folds_ks[:, i, j - self._k_min] = data_label_fold
-                # labels.append(training_final_prediction)
-                # indices.append(self._split_index[i][0])
+                    # change the final prediction's label: test data to be 0, the rest training data will b e updated by the model's prediction
+                    data_label_fold = y.copy()
+                    # all test data to be 0
+                    data_label_fold[self._split_index[i][1]] = 0
+                    # assign the training prediction
+                    data_label_fold[self._split_index[i]
+                                    [0]] = training_final_prediction
+                    data_label_folds_ks[:, i, j -
+                                        self._k_min] = data_label_fold
 
-        #print('Estimating clustering stability...\n')
-        # for the adjusted rand index, only consider the PT results
-        # adjusted_rand_index_results = np.zeros(self._k_max - self._k_min + 1)
+            x_range = np.arange(self._k_min, self._k_max+1, dtype=int)     
+            for m in range(self._k_max - self._k_min + 1):
+                result = data_label_folds_ks[:, :, m]
+                sh_y.append(silhouette_score(x, result[:, 0]))
+                ch_y.append(calinski_harabasz_score(x, result[:, 0]))
+                db_y.append(davies_bouldin_score(x, result[:, 0]))
+            sh_y = self.normalization(sh_y)
+            ch_y = self.normalization(ch_y)
+            db_y = self.normalization(db_y)
+            k = self.get_K_from_three_score(sh_y, ch_y, db_y)
+            K_num.append(k)
 
-        # index_pt = np.where(y == 1)[0]  # index for PTs
-        for m in range(self._k_max - self._k_min + 1):
-            # 此时的result保存了多轮训练的结果. result[i]为第i轮训练的结果
-            # result = data_label_folds_ks[:, :, m][index_pt]
-            result = data_label_folds_ks[:, :, m]
-            # adjusted_rand_index_result = cv_cluster_stability(
-            #     result, self._k_range_list[m])
-            # # saving each k result into the final adjusted_rand_index_results
-            # adjusted_rand_index_results[m] = adjusted_rand_index_result
-            silhouette_y.append(silhouette_score(x, result[:, 0]))
-            ch_y.append(calinski_harabasz_score(x, result[:, 0]))
-            db_y.append(davies_bouldin_score(x, result[:, 0]))
-            # stability_score=[]
-            # for l, i in zip(labels, indices):
-            #     for k, j in zip(labels, indices):
-            #         # we also compute the diagonal which is a bit silly
-            #         in_both = np.intersect1d(i, j)
-            #         stability_score.append(
-            #             ARI(result[in_both][:,0], result[in_both][:,1]))
-            # stability_y.append(np.mean(stability_score))
+            si, = plt.plot(x_range, sh_y, label="Silhoutte score",linestyle="solid")
+            ar, = plt.plot(x_range, ch_y, label="CH score",linestyle="dashdot")
+            st, = plt.plot(x_range, db_y, label="DB score",linestyle="dashed")
+            plt.legend([st, si, ar], ["DB score", "Silhoutte score", "CH score"])
+
+            plt.savefig(self._output_dir+"/HYDRA_"+self._label+str(_)+".png")
+            plt.clf()
+
+        return K_num
+
+
+        # stability_score=[]
+        # for l, i in zip(labels, indices):
+        #     for k, j in zip(labels, indices):
+        #         # we also compute the diagonal which is a bit silly
+        #         in_both = np.intersect1d(i, j)
+        #         stability_score.append(
+        #             ARI(result[in_both][:,0], result[in_both][:,1]))
+        # stability_y.append(np.mean(stability_score))
     # plt.title(title)
-        plt.xlabel("K")
-        plt.ylabel("Score")
-        x_range = np.arange(self._k_min, self._k_max+1, dtype=int)
-        silhouette_y = self.normalization(silhouette_y)
-        ch_y = self.normalization(ch_y)
-        db_y = self.normalization(db_y)  
+        # plt.xlabel("K")
+        # plt.ylabel("Score")
+        # x_range = np.arange(self._k_min, self._k_max+1, dtype=int)
+        # sh_y = self.normalization(sh_y)
+        # ch_y = self.normalization(ch_y)
+        # db_y = self.normalization(db_y)
 
-        si, = plt.plot(x_range, silhouette_y, label="Silhoutte score",linestyle="solid")
-        ar, = plt.plot(x_range, ch_y, label="CH score",linestyle="dashdot")
-        st, = plt.plot(x_range, db_y, label="DB score",linestyle="dashed")
-        plt.legend([st, si, ar], ["DB score", "Silhoutte score", "CH score"])
+        # si, = plt.plot(x_range, sh_y, label="Silhoutte score",linestyle="solid")
+        # ar, = plt.plot(x_range, ch_y, label="CH score",linestyle="dashdot")
+        # st, = plt.plot(x_range, db_y, label="DB score",linestyle="dashed")
+        # plt.legend([st, si, ar], ["DB score", "Silhoutte score", "CH score"])
 
-        plt.savefig(self._output_dir+"/HYDRA_"+self._label+".png")
-        plt.clf()
+        # plt.savefig(self._output_dir+"/HYDRA_"+self._label+".png")
+        # plt.clf()
 
         # plot_pic("Silhoutte Score", self._output_dir+"/HYDRA_"+self._label +
         #          "sh.png", "number of clusters", "Silhoutte Score", x_range, silhouette_y)

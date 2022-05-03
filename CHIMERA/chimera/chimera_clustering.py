@@ -7,7 +7,7 @@ import csv
 import sys
 import numpy as np
 import URF.forest_cluster as rfc
-from sklearn import cluster, manifold,decomposition
+from sklearn import cluster, manifold, decomposition
 __author__ = "Junhao Wen"
 __copyright__ = "Copyright 2019-2020 The CBICA & SBIA Lab"
 __credits__ = ["Junhao Wen, Aoyan Dong"]
@@ -23,8 +23,8 @@ __status__ = "Maintaining"
 #                save_model=True, standardization_method='zscore', saving_criterion='energy_min', verbose=False):
 
 def clustering(k, X, weight_covariate=-1.0, weight_site=10, lambda_b=10.0,
-               lambda_A=100.0, transformation_type='affine', tol=0.001, max_iteration=1000, num_initialization_run=3,
-               save_model=True, standardization_method='zscore', saving_criterion='reproducibility', verbose=False):
+               lambda_A=100.0, transformation_type='affine', tol=0.001, max_iteration=100, num_initialization_run=3,
+               save_model=False, standardization_method='zscore', saving_criterion='energy_min', verbose=False):
     """
     Clustering heterogenous disease effects via distribution matching of imaging patterns.
     Ref: https://pubmed.ncbi.nlm.nih.gov/26452275/
@@ -64,7 +64,7 @@ def clustering(k, X, weight_covariate=-1.0, weight_site=10, lambda_b=10.0,
 
     feat_cov = X["pt_nc_cov"]
     feat_img = X["pt_nc_img"]
-    x_t=decomposition.PCA(n_components=20).fit_transform(feat_img)
+    x_t = decomposition.PCA(n_components=20).fit_transform(feat_img)
     ID = X["pt_ID"]
     group = X["group"].flatten()
     # go into the core function of chimera

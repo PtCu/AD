@@ -42,7 +42,7 @@ class LDAClusterer:
             x_t[i]=normalization(x_t[i])
             
         Mx=(x_t*1000).astype(int)
-        model = lda.LDA(n_topics=self.cluster_num, n_iter=150, random_state=1)
+        model = lda.LDA(n_topics=self.cluster_num, n_iter=20, random_state=1)
         A = model.fit_transform(Mx)  # model.fit_transform(X) is also available
 
         self.labels_ = np.zeros(len(x_t), dtype=int)
