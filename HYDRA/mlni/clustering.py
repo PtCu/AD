@@ -51,6 +51,7 @@ class RB_DualSVM_Subtype(WorkFlow):
         self._save_models = save_models
         self._verbose = verbose
         self._label = label
+        self.repeat_num=5
 
     def run_one_round(self):
         x = self._input.get_x()
@@ -189,7 +190,7 @@ class RB_DualSVM_Subtype(WorkFlow):
 
     def run(self):
         K_num = []
-        for _ in range(0,1):
+        for _ in range(0, self.repeat_num):
             x = self._input.get_x()
             y = self._input.get_y_raw()
             data_label_folds_ks = np.zeros(
@@ -199,8 +200,6 @@ class RB_DualSVM_Subtype(WorkFlow):
             db_y = []
             x = decomposition.PCA(n_components=20).fit_transform(x)
             for i in range(self._cv_repetition):
-                time_bar(i, self._cv_repetition)
-                print()
                 for j in self._k_range_list:
                     if self._verbose:
                         print('Applying pyHRDRA for finding %d clusters. Repetition: %d / %d...\n' %
@@ -219,7 +218,7 @@ class RB_DualSVM_Subtype(WorkFlow):
                     data_label_folds_ks[:, i, j -
                                         self._k_min] = data_label_fold
 
-            x_range = np.arange(self._k_min, self._k_max+1, dtype=int)     
+            x_range = np.arange(self._k_min, self._k_max+1, dtype=int)
             for m in range(self._k_max - self._k_min + 1):
                 result = data_label_folds_ks[:, :, m]
                 sh_y.append(silhouette_score(x, result[:, 0]))
@@ -231,16 +230,19 @@ class RB_DualSVM_Subtype(WorkFlow):
             k = self.get_K_from_three_score(sh_y, ch_y, db_y)
             K_num.append(k)
 
-            si, = plt.plot(x_range, sh_y, label="Silhoutte score",linestyle="solid")
-            ar, = plt.plot(x_range, ch_y, label="CH score",linestyle="dashdot")
-            st, = plt.plot(x_range, db_y, label="DB score",linestyle="dashed")
-            plt.legend([st, si, ar], ["DB score", "Silhoutte score", "CH score"])
+            si, = plt.plot(
+                x_range, sh_y, label="Silhoutte score", linestyle="solid")
+            ar, = plt.plot(x_range, ch_y, label="CH score",
+                           linestyle="dashdot")
+            st, = plt.plot(x_range, db_y, label="DB score", linestyle="dashed")
+            plt.legend([st, si, ar], ["DB score",
+                       "Silhoutte score", "CH score"])
 
             plt.savefig(self._output_dir+"/HYDRA_"+self._label+str(_)+".png")
             plt.clf()
+            time_bar(_, self.repeat_num)
 
         return K_num
-
 
         # stability_score=[]
         # for l, i in zip(labels, indices):

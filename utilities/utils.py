@@ -1,5 +1,5 @@
 from matplotlib import pyplot as plt
-from sklearn.metrics import silhouette_score, calinski_harabasz_score, davies_bouldin_score
+from sklearn.metrics import adjusted_rand_score, silhouette_score, calinski_harabasz_score, davies_bouldin_score
 from sklearn.utils import check_random_state
 from sklearn.base import clone
 import os
@@ -231,7 +231,7 @@ REPEAT_NUM = 5
 
 
 def get_final_K(X, k_min, k_max, est):
-    K_num=[]
+    K_num = []
     for i in range(REPEAT_NUM):
         sh_y = []
         ch_y = []
@@ -240,9 +240,18 @@ def get_final_K(X, k_min, k_max, est):
             time_bar((k-k_min)/(k_max-k_min))
             sk = est(k)
             label = clustering(X, sk)
-            sh_y.append(silhouette_score(sk.x_data, label))
-            ch_y.append(calinski_harabasz_score(sk.x_data, label))
-            db_y.append(davies_bouldin_score(sk.x_data, label))
+            try:
+                sh_y.append(silhouette_score(sk.x_data, label))
+            except:
+                sh_y.append(0.0)
+            try:
+                ch_y.append(calinski_harabasz_score(sk.x_data, label))
+            except:
+                ch_y.append(0.0)
+            try:
+                db_y.append(davies_bouldin_score(sk.x_data, label))
+            except:
+                db_y.append(0.0)
 
         sh_y = normalization(sh_y)
         ch_y = normalization(ch_y)
@@ -251,3 +260,30 @@ def get_final_K(X, k_min, k_max, est):
         k = get_K_from_three_score(sh_y, ch_y, db_y)
         K_num.append(k)
     return K_num
+
+
+def get_ari(X, k_min, k_max, est1, est2, filename, title):
+    ARI_score = []
+    for k in np.arange(k_min, k_max):
+        time_bar((k-k_min)/(k_max-k_min))
+        sk1 = est1(k)
+        sk2 = est2(k)
+        label1 = clustering(X, sk1)
+        label2 = clustering(X, sk2)
+        ARI = adjusted_rand_score(label1, label2)
+        ARI_score.append(ARI)
+    x = np.arange(k_min, k_max)
+
+    plt.rc('font', size=BIGGER_SIZE)          # controls default text sizes
+    plt.rc('xtick', labelsize=MEDIUM_SIZE)    # fontsize of the tick labels
+    plt.rc('ytick', labelsize=MEDIUM_SIZE)    # fontsize of the tick labels
+
+    plt.xlabel("K")
+    plt.ylabel("Score")
+
+    si, = plt.plot(x, ARI_score, label="ARI score", linestyle="solid")
+
+    plt.legend(si, "ARI score")
+
+    plt.savefig(filename+"_"+title+".png")
+    plt.clf()

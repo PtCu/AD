@@ -23,7 +23,7 @@ __status__ = "Maintaining"
 #                save_model=True, standardization_method='zscore', saving_criterion='energy_min', verbose=False):
 
 def clustering(k, X, weight_covariate=-1.0, weight_site=10, lambda_b=10.0,
-               lambda_A=100.0, transformation_type='affine', tol=0.001, max_iteration=100, num_initialization_run=3,
+               lambda_A=100.0, transformation_type='affine', tol=0.001, max_iteration=50, num_initialization_run=2,
                save_model=False, standardization_method='zscore', saving_criterion='energy_min', verbose=False):
     """
     Clustering heterogenous disease effects via distribution matching of imaging patterns.
