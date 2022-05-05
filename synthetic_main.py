@@ -280,16 +280,16 @@ if __name__ == "__main__":
     # test_hydra(simulated_data2, "simulated")
     # test_louvain(simulated_data1,"simulated")
 
-    for i in range(len(source_file1)):
-        test_all(source_file1[i], source_file2[i],
-                 "synthetic_"+source_file1[i][-11:-4])
+    # for i in range(len(source_file1)):
+    #     test_all(source_file1[i], source_file2[i],
+    #              "synthetic_"+source_file1[i][-11:-4])
 
     # for i in range(len(source_file2)):
     #     test_hydra(source_file2[i], "synthetic_"+source_file2[i][-11:-4])
 
     for i in range(len(source_file3)):
         print("K = "+str(i+2))
-        test_all(source_file3[i], "synthetic_"+str(i+2))
+        test_all(source_file3[i], source_file4[i], "synthetic_"+str(i+2))
 
     # for i in range(len(source_file4)):
     #     print("test "+"k= "+str(i+2))

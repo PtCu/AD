@@ -1,12 +1,13 @@
+import itertools
 from matplotlib import pyplot as plt
-from sklearn.metrics import adjusted_rand_score, silhouette_score, calinski_harabasz_score, davies_bouldin_score
-from sklearn.utils import check_random_state
-from sklearn.base import clone
-import os
+from sklearn.metrics import adjusted_rand_score, silhouette_score, calinski_harabasz_score, davies_bouldin_score,confusion_matrix,ConfusionMatrixDisplay
+from sklearn.metrics.cluster import contingency_matrix
 import csv
 import sys
 import numpy as np
-from sklearn.metrics import adjusted_rand_score as ARI
+
+from collections import Counter
+
 rng = np.random.RandomState(1)
 
 
@@ -52,7 +53,7 @@ def cluster_stability(X, est, n_iter=10, random_state=None, pt_only=False):
         for k, j in zip(labels, indices):
             # we also compute the diagonal which is a bit silly
             in_both = np.intersect1d(i, j)
-            scores.append(ARI(l[in_both], k[in_both]))
+            scores.append(adjusted_rand_score(l[in_both], k[in_both]))
     return np.mean(scores)
 
 
@@ -105,7 +106,7 @@ def write_outputfile(output_file, ID, label, true_label, outcome_file, name):
     idx = np.nonzero(out_label[0] == "Cluster")[0]
     out_label = out_label[1:, idx].flatten().astype(np.int)
 
-    measure = ARI(true_label, out_label)
+    measure = adjusted_rand_score(true_label, out_label)
 
     with open(outcome_file, 'a') as f:
         f.write(name+" :\n")
@@ -281,9 +282,107 @@ def get_ari(X, k_min, k_max, est1, est2, filename, title):
     plt.xlabel("K")
     plt.ylabel("Score")
 
-    si, = plt.plot(x, ARI_score, label="ARI score", linestyle="solid")
+    plt.plot(x, ARI_score, label="ARI score", linestyle="solid")
 
-    plt.legend(si, "ARI score")
 
     plt.savefig(filename+"_"+title+".png")
     plt.clf()
+
+def helper_matrix(label1,label2,K):
+    c1 = Counter(label1)
+    c2 = Counter(label2)
+
+    tuple_c1 = c1.most_common(K)
+    tuple_c2 = c2.most_common(K)
+   
+
+    l1 = np.array([tuple_c1[i][0] for i in range(len(tuple_c1))])
+    l2 = np.array([tuple_c2[i][0] for i in range(len(tuple_c2))])
+    l1_idx=[0 for i in range(K)]
+    l2_idx=[0 for i in range(K)]
+    for i in range(K):
+        idx_c1 = np.where(label1 == l1[i])
+        idx_c2 = np.where(label2 == l2[i])
+        l1_idx[l1[i]]=idx_c1
+        l2_idx[l2[i]]=idx_c2
+
+    rank = np.arange(K)
+    for i in range(K):
+        max_common = -1
+        max_common_idx = i
+        for j in range(K):
+            set1=l1_idx[i][0]
+            set2=l2_idx[j][0]
+            inter = np.intersect1d(set1, set2)
+            # print("i:"+str(i)+" num "+str(set1))
+            # print("j:"+str(j)+" num "+str(set2))
+            # print(str(i)+" with "+str(j)+" :"+str(len(inter)))
+            if len(inter) > max_common:
+                max_common = len(inter)
+                max_common_idx = j
+            # max_common_idx=
+        rank[i], rank[max_common_idx] = rank[max_common_idx], rank[i]
+        l2_idx[i],l2_idx[max_common_idx]=l2_idx[max_common_idx],l2_idx[i]
+
+    # l2=l2[rank]
+    # l1_idx=np.array(l1_idx)
+    # l2_idx=np.array(l2_idx)
+    # l2_idx=l2_idx[rank]
+
+    matrix = np.zeros((K, K),dtype=int)
+    for i in range(K):
+        for j in range(K):
+            inter = np.intersect1d(l1_idx[i][0], l2_idx[j][0])
+            matrix[i][j]=int(len(inter))
+
+
+    return matrix
+
+def get_matrix(X, k_min, k_max, est1, est2, filename, title):
+    for k in np.arange(k_min, k_max):
+        labels=list(range(k))
+        time_bar((k-k_min)/(k_max-k_min))
+        sk1 = est1(k)
+        sk2 = est2(k)
+        label1 = clustering(X, sk1)
+        label2 = clustering(X, sk2)
+        # ct=contingency_matrix(label1,label2)
+        # cm = confusion_matrix(label1, label2, labels)
+        cm = helper_matrix(label1,label2,k)
+
+        plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
+        plt.colorbar()
+        tick_marks = np.arange(len(labels))
+        plt.xticks(tick_marks, labels)
+        plt.yticks(tick_marks, labels)
+        # matplotlib版本问题，如果不加下面这行代码，则绘制的混淆矩阵上下只能显示一半，有的版本的matplotlib不需要下面的代码，分别试一下即可
+        plt.ylim(len(labels) - 0.5, -0.5)
+        fmt = 'd'
+        thresh = cm.max() / 2.
+        for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+            # plt.text(j, i, cm[i, j])
+            plt.text(j, i, format(cm[i, j], fmt),
+                    horizontalalignment="center",
+                    color="white" if cm[i, j] > thresh else "black")
+        plt.xlabel(sk1.name)
+        plt.ylabel(sk2.name)
+        plt.tight_layout()
+        plt.savefig(filename+title+str(k)+".png")
+        plt.clf()
+
+
+def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix', cmap=plt.cm.Blues):
+    """
+    - cm : 计算出的混淆矩阵的值
+    - classes : 混淆矩阵中每一行每一列对应的列
+    - normalize : True:显示百分比, False:显示个数
+    """
+    if normalize:
+        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+        print("显示百分比：")
+        np.set_printoptions(formatter={'float': '{: 0.2f}'.format})
+        print(cm)
+    else:
+        print('显示具体数字：')
+        print(cm)
+    

@@ -16,13 +16,14 @@ K_max = 9
 
 cwd_path = os.getcwd()
 data_dir = cwd_path+"/data/"
-
+dirs = ['S01_mean_ts','S02_mean_ts','S03_mean_ts','S04_mean_ts','S05_mean_ts','S06_mean_ts','S07_mean_ts']
 source_list = []
 prefix = data_dir+"origin_data/"
 
-for f_name in os.listdir(prefix):
-    if f_name.startswith('3_AD'):
-        source_list.append(prefix+f_name)
+for dir in dirs:
+    for f_name in os.listdir(prefix+dir):
+        if f_name.startswith('3'):
+            source_list.append(prefix+dir+"/"+f_name)
 
 
 NC_TYPE = 0
@@ -32,7 +33,7 @@ title1 = ["SET", "GROUP"]
 title2 = ["session_id", "diagnosis"]
 session_id = 0
 
-DEST_DIM=200 #降到200维
+# DEST_DIM=200 #降到200维
 def add_label(X, title, dest_file):
     # x_t=decomposition.PCA(n_components=DEST_DIM).fit_transform(X)
     df = pd.DataFrame(X, columns=title)
@@ -72,11 +73,11 @@ def generate_all():
     data = []
     dest_file = data_dir+"real_data"
     for src in source_list:
-        X=pd.read_csv(src).values
+        X=pd.read_csv(src, sep='\t|,|;').values
         generate_from_one(X, data)     
 
     add_label(data, title1, dest_file+"_real"+"_1.csv")
-    add_label(data, title2, dest_file+"_real"+"_2.csv")
+    # add_label(data, title2, dest_file+"_real"+"_2.csv")
  
 
 

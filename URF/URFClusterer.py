@@ -19,6 +19,7 @@ class URFClusterer:
         self.labels_ = []
         self.x_data = []
         self.y_data=[]
+        self.name="URF"
 
     def fit(self, X):
         self.x_data = X["pt_nc_img"]

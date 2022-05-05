@@ -8,7 +8,7 @@ from sklearn.metrics import silhouette_score
 from matplotlib import pyplot as plt
 from sklearn.metrics import adjusted_rand_score as ARI
 from sklearn import decomposition
-from utilities.utils import plot_pic
+ 
 rng = np.random.RandomState(1)
 __author__ = "Junhao Wen"
 __copyright__ = "Copyright 2019-2020 The CBICA & SBIA Lab"

@@ -21,6 +21,7 @@ class NMFClusterer:
         self.labels_ = []
         self.x_data =[]
         self.y_data=[]
+        self.name="NMF"
 
     def normalization(self,data):
         _range = np.max(data) - np.min(data)

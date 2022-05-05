@@ -16,7 +16,8 @@ class GMMClusterer:
         self.labels_ = []
         self.x_data = []
         self.y_data = []
-
+        self.name="GMM"
+        
     def fit(self, X):
         self.x_data = X["pt_nc_img"]
         #self.y_data = X["true_label"]

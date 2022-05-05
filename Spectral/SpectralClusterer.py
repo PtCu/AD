@@ -22,6 +22,7 @@ class SpectralClusterer:
         self.x_data = []
         self.y_data = []
         self.k_num = 0
+        self.name="Spectral"
 
     def fit(self, X):
         self.x_data = X["pt_nc_img"]

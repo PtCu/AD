@@ -13,7 +13,7 @@ from matplotlib import pyplot as plt
 import lda
 import URF.forest_cluster as rfc
 from sklearn import cluster, manifold,decomposition
-from data_generator import normalization
+from simulated_data1_generator import normalization
 cwd_path = os.getcwd()
 
 class LDAClusterer:

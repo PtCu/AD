@@ -31,6 +31,7 @@ class KMedianClusterer:
         self.cluster_num = int(cluster_num)
         self.x_data =[]
         self.y_data=[]
+        self.name="K-medians"
 
 
     def fit(self,X):
