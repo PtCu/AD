@@ -47,7 +47,7 @@ real_data2 = cwd_path+"/data/real_data2.csv"
 output_dir = cwd_path+"/output/"
 
 K_min = 2
-K_max = 9
+K_max = 8
 
 
 def test_hierachical(data_file, label):
@@ -209,50 +209,51 @@ def test_gmm(data_file, label):
 def test_all(filename1, filename2, label):
     print("running "+filename1)
     hydra = test_hydra(filename2, label)
-    nmf = test_nmf(filename1, label)
-    gmm = test_gmm(filename1, label)
-    lda = test_lda(filename1, label)
-    urf = test_urf(filename1, label)
-    hierachical = test_hierachical(filename1, label)
-    k_medians = test_K_medians(filename1, label)
-    spectral = test_spectral(filename1, label)
-    chimera = test_chimera(filename1, label)
+    # nmf = test_nmf(filename1, label)
+    # gmm = test_gmm(filename1, label)
+    # lda = test_lda(filename1, label)
+    # urf = test_urf(filename1, label)
+    # hierachical = test_hierachical(filename1, label)
+    # k_medians = test_K_medians(filename1, label)
+    # spectral = test_spectral(filename1, label)
+    # chimera = test_chimera(filename1, label)
 
     with open(output_dir+label+".txt", 'a') as f:
-        f.write("label: "+label)
-        f.write("gmm: "+str(gmm)+"\n")
-        f.write("nmf: "+str(nmf)+"\n")
-        f.write("lda: "+str(lda)+"\n")
-        f.write("urf: "+str(urf)+"\n")
-        f.write("hierachical: "+str(hierachical)+"\n")
-        f.write("k_medians: "+str(k_medians)+"\n")
-        f.write("spectral: "+str(spectral)+"\n")
-        f.write("chimera: "+str(chimera)+"\n")
+        # f.write("label: "+label)
+        # f.write("gmm: "+str(gmm)+"\n")
+        # f.write("nmf: "+str(nmf)+"\n")
+        # f.write("lda: "+str(lda)+"\n")
+        # f.write("urf: "+str(urf)+"\n")
+        # f.write("hierachical: "+str(hierachical)+"\n")
+        # f.write("k_medians: "+str(k_medians)+"\n")
+        # f.write("spectral: "+str(spectral)+"\n")
+        # f.write("chimera: "+str(chimera)+"\n")
+        f.write("hydra: "+str(hydra)+"\n")
         f.close()
 
-    data = {}
-    data["NMF"] = nmf
-    data["GMM"] = gmm
-    data["LDA"] = lda
-    data["URF"] = urf
-    data["CHIMERA"] = chimera
-    data["层次聚类"] = hierachical
-    data["K-Medians"] = k_medians
-    data["谱聚类"] = spectral
-    data["HYDRA"] = hydra
+    # data = {}
+    # data["NMF"] = nmf
+    # data["GMM"] = gmm
+    # data["LDA"] = lda
+    # data["URF"] = urf
+    # data["CHIMERA"] = chimera
+    # data["层次聚类"] = hierachical
+    # data["K-Medians"] = k_medians
+    # data["谱聚类"] = spectral
+    # data["HYDRA"] = hydra
 
-    labels, data = data.keys(), data.values()
-    plt.rcParams["font.sans-serif"] = ["SimHei"]  # 设置字体
-    plt.rcParams["axes.unicode_minus"] = False  # 该语句解决图像中的“-”负号的乱码问题
+    # labels, data = data.keys(), data.values()
+    # plt.rcParams["font.sans-serif"] = ["SimHei"]  # 设置字体
+    # plt.rcParams["axes.unicode_minus"] = False  # 该语句解决图像中的“-”负号的乱码问题
 
-    plt.figure(figsize=(12, 7))
-    plt.boxplot(data)
-    plt.ylabel("K", fontsize=20)
-    plt.xlabel("Algorithms", fontsize=20)  # 我们设置横纵坐标的标题。
-    plt.xticks(range(1, len(labels) + 1), labels, fontsize=15)
-    plt.yticks(range(1, 9), fontsize=16)
-    # plt.show()
-    plt.savefig(output_dir+label)
+    # plt.figure(figsize=(12, 7))
+    # plt.boxplot(data)
+    # plt.ylabel("K", fontsize=20)
+    # plt.xlabel("Algorithms", fontsize=20)  # 我们设置横纵坐标的标题。
+    # plt.xticks(range(1, len(labels) + 1), labels, fontsize=15)
+    # plt.yticks(range(1, 9), fontsize=16)
+    # # plt.show()
+    # plt.savefig(output_dir+label)
 
 
 prefix = cwd_path+"/data/clustering"

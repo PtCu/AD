@@ -20,7 +20,7 @@ class HierachicalClusterer:
         self.labels_ = []
         self.x_data = []
         self.y_data=[]
-        self.name="Hierachical"
+        self.name="Hierarchical"
 
     def fit(self, X):
         self.x_data = X["pt_nc_img"]
