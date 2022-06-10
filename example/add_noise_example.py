@@ -1,3 +1,6 @@
+# 未使用
+# 读取数据文件，并添加噪声
+
 import numpy as np
 from pip import main
 from pyparsing import col
@@ -17,7 +20,7 @@ source_file1 = os.path.join(data_dir, "1_NC001_ts.csv")
 source_file2 = os.path.join(data_dir, "1_NC002_ts.csv")
 source_file3 = os.path.join(data_dir, "2_MC001_ts.csv")
 source_file4 = os.path.join(data_dir, "2_MC002_ts.csv")
-source_file5 = os.path.join(data_dir, "3_AD001_ts.csv")
+source_file5 = os.pathoin(data_dir, "3_AD001_ts.csv")
 source_file6 = os.path.join(data_dir, "3_AD002_ts.csv")
 tmp_file = os.path.join(data_dir, "tmp_data.csv")
 dest_file1 = os.path.join(data_dir, "real_data1.csv")
@@ -63,6 +66,8 @@ def read_data():
                 item.append(int(PT_TYPE))
             for j in range(df.shape[1]):
                 item.append(df.at[i, j])
+
+            # 添加噪声（不知道这样添加对不对）
             item[-df.shape[1]:] += np.random.normal(0, 0.0025, df.shape[1])
             data.append(item)
 

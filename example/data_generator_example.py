@@ -1,7 +1,7 @@
+
+
 import numpy as np
 import csv
-
-
 import pandas as pd
 
 TOTAL_NUM = 500
@@ -12,6 +12,7 @@ NC_TYPE = -1
 PT_TYPE = 1
 
 DATA_SET = 0
+
 
 file_name = "simulated_data.tsv"
 feature_file="feature.tsv"
@@ -119,7 +120,7 @@ if __name__ == "__main__":
         tsv_w = csv.writer(f, delimiter='\t')
         title_feature = ["participant_id", "session_id", "diagnosis"]
         for i in range(1, 21):
-            title_feature.append("ROI"+str(i))
+            title_feature.append("ROI")
 
         tsv_w.writerow(title_feature)
 

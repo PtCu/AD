@@ -1,15 +1,14 @@
-from dataclasses import replace
-from random import randint
+
+# 真实数据的读取和处理
+# 输入为时间序列文件，输出为tsv或csv文件
+# data2用于格式2，给HYDRA算法用的
+
 import numpy as np
-from pip import main
-from pyparsing import col
-from sklearn.utils import check_random_state, check_array
-import utilities.utils as utl
+
 import os
-import sys
-import csv
+
 import pandas as pd
-from sklearn import manifold,decomposition,cluster
+
 
 K_min = 2
 K_max = 9
@@ -77,7 +76,7 @@ def generate_all():
         generate_from_one(X, data)     
 
     add_label(data, title1, dest_file+"_real"+"_1.csv")
-    # add_label(data, title2, dest_file+"_real"+"_2.csv")
+    add_label(data, title2, dest_file+"_real"+"_2.csv")
  
 
 

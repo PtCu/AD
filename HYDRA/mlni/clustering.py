@@ -127,72 +127,9 @@ class RB_DualSVM_Subtype(WorkFlow):
             k = self.get_K_from_three_score(sh_y, ch_y, db_y)
             K_num.append(k)
 
-            # si, = plt.plot(
-            #     x_range, sh_y, label="Silhoutte score", linestyle="solid")
-            # ar, = plt.plot(x_range, ch_y, label="CH score",
-            #                linestyle="dashdot")
-            # st, = plt.plot(x_range, db_y, label="DB score", linestyle="dashed")
-            # plt.legend([st, si, ar], ["DB score",
-            #            "Silhoutte score", "CH score"])
 
-            # plt.savefig(self._output_dir+"/HYDRA_"+self._label+str(_)+".png")
-            # plt.clf()
             time_bar(_, self.repeat_num)
 
         return K_num
 
-        # stability_score=[]
-        # for l, i in zip(labels, indices):
-        #     for k, j in zip(labels, indices):
-        #         # we also compute the diagonal which is a bit silly
-        #         in_both = np.intersect1d(i, j)
-        #         stability_score.append(
-        #             ARI(result[in_both][:,0], result[in_both][:,1]))
-        # stability_y.append(np.mean(stability_score))
-    # plt.title(title)
-        # plt.xlabel("K")
-        # plt.ylabel("Score")
-        # x_range = np.arange(self._k_min, self._k_max+1, dtype=int)
-        # sh_y = self.normalization(sh_y)
-        # ch_y = self.normalization(ch_y)
-        # db_y = self.normalization(db_y)
-
-        # si, = plt.plot(x_range, sh_y, label="Silhoutte score",linestyle="solid")
-        # ar, = plt.plot(x_range, ch_y, label="CH score",linestyle="dashdot")
-        # st, = plt.plot(x_range, db_y, label="DB score",linestyle="dashed")
-        # plt.legend([st, si, ar], ["DB score", "Silhoutte score", "CH score"])
-
-        # plt.savefig(self._output_dir+"/HYDRA_"+self._label+".png")
-        # plt.clf()
-
-        # plot_pic("Silhoutte Score", self._output_dir+"/HYDRA_"+self._label +
-        #          "sh.png", "number of clusters", "Silhoutte Score", x_range, silhouette_y)
-
-        # plot_pic("Calinski Harabasz Score", self._output_dir+"/HYDRA_"+self._label +
-        #          "ch.png", "number of clusters", "Calinski Harabasz Score", x_range, ch_y)
-
-        # plot_pic("Davies Bouldin Score", self._output_dir+"/HYDRA_"+self._label +
-        #          "db.png", "number of clusters", "Davies Bouldin Score", x_range, db_y)
-
-        # print('Computing the final consensus group membership...\n')
-        # final_assignment_ks = -np.ones((self._input.get_y_raw().shape[0], self._k_max - self._k_min + 1)).astype(int)
-        # for n in range(self._k_max - self._k_min + 1):
-        #     result = data_label_folds_ks[:, :, n][index_pt]
-        #     final_assignment_ks_pt = consensus_clustering(result, n + self._k_min)
-        #     final_assignment_ks[index_pt, n] = final_assignment_ks_pt + 1
-        # #样本被分为-1（NC)以及0（亚型1）和1（亚型2）
-        # print('Saving the final results...\n')
-        # # save_cluster_results(adjusted_rand_index_results, final_assignment_ks)
-        # columns = ['ari_' + str(i) + '_subtypes' for i in self._k_range_list]
-        # ari_df = pd.DataFrame(adjusted_rand_index_results[:, np.newaxis].transpose(), columns=columns)
-        # ari_df.to_csv(os.path.join(self._output_dir, 'adjusted_rand_index.tsv'), index=False, sep='\t',
-        #               encoding='utf-8')
-
-        # # save the final assignment for consensus clustering across different folds
-        # df_feature = pd.read_csv(self._feature_tsv, sep='\t')
-        # columns = ['assignment_' + str(i) for i in self._k_range_list]
-        # participant_df = df_feature.iloc[:, :3]
-        # cluster_df = pd.DataFrame(final_assignment_ks, columns=columns)
-        # all_df = pd.concat([participant_df, cluster_df], axis=1)
-        # all_df.to_csv(os.path.join(self._output_dir, 'clustering_assignment.tsv'), index=False,
-        #               sep='\t', encoding='utf-8')
+       

@@ -10,7 +10,7 @@ from collections import Counter
 
 rng = np.random.RandomState(1)
 
-
+# 计算稳定性(deprecated)
 def cluster_stability(X, est, n_iter=10, random_state=None, pt_only=False):
     labels = []
     indices = []
@@ -56,7 +56,7 @@ def cluster_stability(X, est, n_iter=10, random_state=None, pt_only=False):
             scores.append(adjusted_rand_score(l[in_both], k[in_both]))
     return np.mean(scores)
 
-
+# 读取数据
 def read_data(filename, decimals=16):
     sys.stdout.write('\treading data...\n')
     feat_cov = None
@@ -88,7 +88,7 @@ def read_data(filename, decimals=16):
 
     return feat_cov, np.around(feat_img, decimals=decimals), set, ID, group
 
-
+# 写结果(deprecated)
 def write_outputfile(output_file, ID, label, true_label, outcome_file, name):
     with open(output_file, 'w') as f:
         if ID is None:
@@ -146,12 +146,12 @@ SMALL_SIZE = 8
 MEDIUM_SIZE = 10
 BIGGER_SIZE = 15
 
-
+# 画折线图
 def plot_pic(title, filename, x_label, y_label, x, y):
     plt.rc('font', size=BIGGER_SIZE)          # controls default text sizes
     plt.rc('xtick', labelsize=MEDIUM_SIZE)    # fontsize of the tick labels
     plt.rc('ytick', labelsize=MEDIUM_SIZE)    # fontsize of the tick labels
-    # plt.title(title)
+    plt.title(title)
     y = normalization(np.array(y))
     plt.xlabel(x_label)
     plt.ylabel(y_label)
@@ -168,7 +168,7 @@ def helper(x, y):
     y = y[np.array(x_)]
     return y
 
-
+# 裁判法得到最终的最优聚类数目
 def get_K_from_three_score(sh_y, ch_y, db_y):
     sh_y = np.array(sh_y)
     ch_y = np.array(ch_y)
@@ -186,7 +186,9 @@ def get_K_from_three_score(sh_y, ch_y, db_y):
     else:
         return sh_k+2
 
+from matplotlib.pyplot import MultipleLocator
 
+# 绘制最优聚类数目图。横轴为K，纵轴为评估指标数值
 def plot_K(X, k_min, k_max, filename, est, title, stride=1):
     sh_y = []
     ch_y = []
@@ -214,11 +216,19 @@ def plot_K(X, k_min, k_max, filename, est, title, stride=1):
     ch_y = normalization(ch_y)
     db_y = normalization(db_y)
 
+    plt.rc('font', size=BIGGER_SIZE)          # controls default text sizes
+    plt.rc('xtick', labelsize=BIGGER_SIZE)    # fontsize of the tick labels
+    plt.rc('ytick', labelsize=BIGGER_SIZE)    # fontsize of the tick labels
+    
+    x_major_locator=MultipleLocator(1)
+    ax=plt.gca()
+    #ax为两条坐标轴的实例
+    ax.xaxis.set_major_locator(x_major_locator)
     k = get_K_from_three_score(sh_y, ch_y, db_y)
     # plt.title(title)
     plt.xlabel("K")
     plt.ylabel("Score")
-
+    # plt.xlim(1.5,9)
     si, = plt.plot(x, sh_y, label="Silhoutte score", linestyle="solid")
     ar, = plt.plot(x, ch_y, label="CH score", linestyle="dashdot")
     st, = plt.plot(x, db_y, label="DB score", linestyle="dashed")
@@ -230,7 +240,7 @@ def plot_K(X, k_min, k_max, filename, est, title, stride=1):
 
 REPEAT_NUM = 5
 
-
+# 得到算法的最优聚类数目
 def get_final_K(X, k_min, k_max, est):
     K_num = []
     for i in range(REPEAT_NUM):
@@ -262,7 +272,7 @@ def get_final_K(X, k_min, k_max, est):
         K_num.append(k)
     return K_num
 
-
+# 得到ARI
 def get_ari(X, k_min, k_max, est1, est2, filename, title):
     ARI_score = []
     for k in np.arange(k_min, k_max):
@@ -288,6 +298,7 @@ def get_ari(X, k_min, k_max, est1, est2, filename, title):
     plt.savefig(filename+"_"+title+".png")
     plt.clf()
 
+# 计算混淆矩阵
 def helper_matrix(label1,label2,K):
     c1 = Counter(label1)
     c2 = Counter(label2)
@@ -338,6 +349,7 @@ def helper_matrix(label1,label2,K):
 
     return matrix
 
+# 得到两个算法est1和est2的混淆矩阵
 def get_matrix(X, k_min, k_max, est1, est2, filename, title):
     for k in np.arange(k_min, k_max):
         labels=list(range(k))
@@ -370,8 +382,8 @@ def get_matrix(X, k_min, k_max, est1, est2, filename, title):
         plt.savefig(filename+title+str(k)+".png")
         plt.clf()
 
-
-def plot_confusion_matrix(cm, classes, normalize=False, title='Confusion matrix', cmap=plt.cm.Blues):
+# 绘制矩阵
+def plot_matrix(cm, classes, normalize=False, title='Confusion matrix', cmap=plt.cm.Blues):
     """
     - cm : 计算出的混淆矩阵的值
     - classes : 混淆矩阵中每一行每一列对应的列
