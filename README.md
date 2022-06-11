@@ -17,12 +17,18 @@
 3. 仿真数据2的生成在data_generator_synthetic.py中进行了实现。直接运行此文件即可。
 4. 真实数据的处理在data_generator_real.py中进行了实现。直接运行此文件即可。
 5. HYDRA算法所需的格式不同，所以单独生成了一份该格式的。后续可以将格式进行统一。
-
+6. 生成的数据默认在data/文件夹下。
+   
 ## 评估模块
 提供的评估功能包括最优聚类数目评估和混淆矩阵。具体实现在utilities/utils.py。
-get_final_K()得到待测算法的最优聚类数目，get_matrix()得到两个算法的混淆矩阵。
+get_final_K()得到待测算法的最优聚类数目。
+get_matrix()得到两个算法的混淆矩阵，并同时绘制出图。
 在simulated_main.py, synthetic_main.py, real_main.py中有使用示例
 
+### 评估标准：
+1. 若三个指标都相同，则直接取
+2. 若三个中有两个相同，则取这两个的
+3. 若三个都不同，则取轮廓系数为准
 
 ## Reference:
 

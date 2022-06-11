@@ -185,6 +185,7 @@ def test_gmm(data_file, label):
 
 
 def test_all(simulated1, simulated2,label):
+    # 得到若干次评估的最优聚类数目
     nmf = test_nmf(simulated1, label)
     gmm = test_gmm(simulated1, label)
     lda = test_lda(simulated1, label)
@@ -194,6 +195,7 @@ def test_all(simulated1, simulated2,label):
     spectral = test_spectral(simulated1, label)
     chimera = test_chimera(simulated1, label)
     hydra = test_hydra(simulated2, label)
+    
     with open(output_dir+label+".txt", 'a') as f:
         f.write("gmm: "+str(gmm)+"\n")
         f.write("nmf: "+str(nmf)+"\n")
@@ -206,6 +208,7 @@ def test_all(simulated1, simulated2,label):
         f.write("chimera: "+str(hydra)+"\n")
         f.close()
 
+    # 绘制箱线图
     data = {}
     data["nmf"] = nmf
     data["gmm"] = gmm
@@ -227,7 +230,7 @@ def test_all(simulated1, simulated2,label):
     plt.xlabel("Algorithms",fontsize=20)  # 我们设置横纵坐标的标题。
     plt.xticks(range(1, len(labels) + 1), labels,fontsize=15)
     plt.yticks(range(1,9),fontsize=16)
-    plt.show()
+    #plt.show()
     plt.savefig(output_dir+label)
 
 

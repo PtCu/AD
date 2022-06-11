@@ -184,6 +184,7 @@ def test_gmm(data_file, label):
 
 
 def test_all(filename1, filename2, label):
+    # 得到若干次评估的最优聚类数目
     print("running "+filename1)
     hydra = test_hydra(filename2, label)
     nmf = test_nmf(filename1, label)
@@ -208,6 +209,7 @@ def test_all(filename1, filename2, label):
         f.write("hydra: "+str(hydra)+"\n")
         f.close()
 
+    # 绘制箱线图
     data = {}
     data["NMF"] = nmf
     data["GMM"] = gmm

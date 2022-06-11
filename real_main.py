@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
     # utl.get_ari(X,K_min,K_max,URFClusterer,KMedianClusterer,output_dir,"urf-k_medians")
 
-
+    # 混淆矩阵
     utl.get_matrix(X,K_min,K_max,URFClusterer,HierachicalClusterer,output_dir,"urf-Hierarchical_cf_matrix")
 
     utl.get_matrix(X,K_min,K_max,KMedianClusterer,HierachicalClusterer,output_dir,"K_medians-Hierarchical_cf_matrix")
