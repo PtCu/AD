@@ -19,10 +19,12 @@
 5. HYDRA算法所需的格式不同，所以单独生成了一份该格式的。后续可以将格式进行统一。
 
 ## 评估模块
-提供的评估功能包括最优聚类数目评估，ARI评估和混淆矩阵。实现在utilities/utils.py。
+提供的评估功能包括最优聚类数目评估和混淆矩阵。具体实现在utilities/utils.py。
+get_final_K()得到待测算法的最优聚类数目，get_matrix()得到两个算法的混淆矩阵。
+在simulated_main.py, synthetic_main.py, real_main.py中有使用示例
 
 
-reference:
+## Reference:
 
 Beyas: 
 
